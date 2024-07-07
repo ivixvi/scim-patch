@@ -10,6 +10,8 @@ import (
 	filter "github.com/scim2/filter-parser/v2"
 )
 
+// path は *filter.Path を取得しやすくするためのテストユーティリティです。
+// APIのリクエストボディ Operations[].path にはいってくる想定の値を引数に与えて利用します。
 func path(s string) *filter.Path {
 	p, err := filter.ParsePath([]byte(s))
 	if err != nil {
@@ -18,6 +20,7 @@ func path(s string) *filter.Path {
 	return &p
 }
 
+// TestPatcher_Apply は Pacher.Apply の正常系をテストします
 func TestPatcher_Apply(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
@@ -89,6 +92,7 @@ func TestPatcher_Apply(t *testing.T) {
 	}
 }
 
+// TestPatcher_ApplyError は Pacher.Apply の異常系をテストします
 func TestPatcher_ApplyError(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
