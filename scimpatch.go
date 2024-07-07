@@ -13,33 +13,43 @@ type Patcher struct {
 	SchemaExtensions []scim.SchemaExtension
 }
 
-// Apply is returns a argument.
+// Apply は RFC7644 3.5.2.  Modifying with PATCH の実装です。
+// data に op が適用された ResourceAttributes を返却します。
+// see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2
 func (p Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
 	switch strings.ToLower(op.Op) {
 	case scim.PatchOperationAdd:
-		return p.Add(op, data)
+		return p.add(op, data)
 	case scim.PatchOperationReplace:
-		return p.Replace(op, data)
+		return p.replace(op, data)
 	case scim.PatchOperationRemove:
-		return p.Remove(op, data)
+		return p.remove(op, data)
 	}
 	return data, nil
 }
 
-// Add is returns a argument.
-func (p Patcher) Add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
+// add は RFC7644 3.5.2.1. Add Operation の実装です。
+// data に op が適用された ResourceAttributes を返却します。
+// see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.1
+// 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
+func (p Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
 	return data, nil
 }
 
-// Replace is returns a argument.
-func (p Patcher) Replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
+// replace は RFC7644 3.5.2.3. Replace Operation の実装です。
+// data に op が適用された ResourceAttributes を返却します。
+// see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.3
+// 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
+func (p Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
 	return data, nil
 }
 
-// Remove is returns a argument.
-func (p Patcher) Remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
+// remove は RFC7644 3.5.2.2. Remove Operation の実装です。
+// data に op が適用された ResourceAttributes を返却します。
+// see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.2
+// 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
+func (p Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
 	if op.Path == nil {
-		// 3.5.2.2. Remove Operation
 		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
 		return scim.ResourceAttributes{}, errors.ScimErrorNoTarget
 	}

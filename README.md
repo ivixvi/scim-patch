@@ -1,9 +1,11 @@
 # scim-patch
 Go implementation of SCIM 2.0 Patch operations.
 
-Currently, we only have a concept, but we plan to implement it gradually.
+> [!CAUTION]
+> It has not been fully implemented and is not ready for use.
 
 # Overview
+
 The specification of SCIM 2.0 Patch operations is broad, and absorbing the differences for each IdP is also challenging.
 Therefore, this library aims to comprehensively handle "schema manipulation via Patch".
 
