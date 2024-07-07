@@ -13,7 +13,7 @@ import (
 func path(s string) *filter.Path {
 	p, err := filter.ParsePath([]byte(s))
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Failed to parse %s occurred by %s", s, err))
+		fmt.Printf("Failed to parse %s occurred by %s\n", s, err)
 	}
 	return &p
 }
