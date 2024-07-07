@@ -20,8 +20,10 @@ type testData struct {
 
 // simple in-memory resource database.
 type testResourceHandler struct {
-	data   map[string]testData
-	schema schema.Schema
+	data             map[string]testData
+	schema           schema.Schema
+	schemaExtensions []scim.SchemaExtension
+	patcher          scimpatch.Patcher
 }
 
 // notImplemented is error returns 501 Not Implemented.
@@ -95,7 +97,7 @@ func (h testResourceHandler) Patch(r *http.Request, id string, operations []scim
 	// Apply PATCH operations
 	var err error
 	for _, op := range operations {
-		data.resourceAttributes, err = scimpatch.Apply(op, data.resourceAttributes)
+		data.resourceAttributes, err = h.patcher.Apply(op, data.resourceAttributes)
 		if err != nil {
 			return scim.Resource{}, err
 		}
