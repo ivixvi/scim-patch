@@ -6,6 +6,7 @@ import (
 
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/errors"
+	"github.com/elimity-com/scim/schema"
 	"github.com/ivixvi/scimpatch"
 	filter "github.com/scim2/filter-parser/v2"
 )
@@ -56,7 +57,7 @@ func TestPatcher_Apply(t *testing.T) {
 			},
 		},
 		{
-			name: "Replace operation",
+			name: "Remove operation - Core Singular Attribute",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("displayName"),
@@ -64,8 +65,37 @@ func TestPatcher_Apply(t *testing.T) {
 			data: scim.ResourceAttributes{
 				"displayName": "Bob Green",
 			},
+			expected: scim.ResourceAttributes{},
+		},
+		{
+			name: "Remove operation - Extention Singular Attribute - All Removed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"department": "2B Sales",
+				},
+			},
+			expected: scim.ResourceAttributes{},
+		},
+		{
+			name: "Remove operation - Extention Singular Attribute - Partially Removed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division":   "Sales",
+					"department": "2B Sales",
+				},
+			},
 			expected: scim.ResourceAttributes{
-				"displayName": "Bob Green",
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
 			},
 		},
 	}
@@ -74,7 +104,14 @@ func TestPatcher_Apply(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
 			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.Patcher{}
+			patcher := scimpatch.Patcher{
+				Schema: schema.CoreUserSchema(),
+				SchemaExtensions: []scim.SchemaExtension{
+					{
+						Schema: schema.ExtensionEnterpriseUser(),
+					},
+				},
+			}
 
 			// Apply the PatchOperation
 			result, err := patcher.Apply(tc.op, tc.data)
@@ -83,10 +120,8 @@ func TestPatcher_Apply(t *testing.T) {
 			}
 
 			// Check if the result matches the expected data
-			for key, expectedValue := range tc.expected {
-				if result[key] != expectedValue {
-					t.Errorf("for key %q, expected %v, got %v", key, expectedValue, result[key])
-				}
+			if !(fmt.Sprint(result) == fmt.Sprint(tc.expected)) {
+				t.Errorf("actual: %v, expected: %v", result, tc.expected)
 			}
 		})
 	}
