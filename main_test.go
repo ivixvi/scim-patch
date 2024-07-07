@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/elimity-com/scim"
+	"github.com/elimity-com/scim/errors"
 	"github.com/ivixvi/scimpatch"
 	filter "github.com/scim2/filter-parser/v2"
 )
@@ -83,6 +84,48 @@ func TestPatcher_Apply(t *testing.T) {
 				if result[key] != expectedValue {
 					t.Errorf("for key %q, expected %v, got %v", key, expectedValue, result[key])
 				}
+			}
+		})
+	}
+}
+
+func TestPatcher_ApplyError(t *testing.T) {
+	// Define the test cases
+	testCases := []struct {
+		name     string
+		op       scim.PatchOperation
+		expected errors.ScimError
+	}{
+		{
+			name: "Remove operation - no specify path",
+			op: scim.PatchOperation{
+				Op: "remove",
+			},
+			expected: errors.ScimErrorNoTarget,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Log(tc.name)
+			// Create a Patcher instance with a dummy schema
+			patcher := scimpatch.Patcher{}
+
+			// Apply the PatchOperation
+			_, err := patcher.Apply(tc.op, scim.ResourceAttributes{})
+			if err == nil {
+				t.Fatalf("Apply() not returned error")
+			}
+			scimError, ok := err.(errors.ScimError)
+			if !ok {
+				t.Fatalf("Apply() not returned ScimError: %v", err)
+			}
+
+			// Check if the result matches the expected data
+			if !(tc.expected.Detail == scimError.Detail &&
+				tc.expected.Status == scimError.Status &&
+				tc.expected.ScimType == scimError.ScimType) {
+				t.Fatalf("Apply() not returned Expected ScimError: %v", scimError)
 			}
 		})
 	}

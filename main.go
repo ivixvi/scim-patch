@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/elimity-com/scim"
+	"github.com/elimity-com/scim/errors"
 	"github.com/elimity-com/scim/schema"
 )
 
@@ -37,5 +38,10 @@ func (p Patcher) Replace(op scim.PatchOperation, data scim.ResourceAttributes) (
 
 // Remove is returns a argument.
 func (p Patcher) Remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
+	if op.Path == nil {
+		// 3.5.2.2. Remove Operation
+		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
+		return scim.ResourceAttributes{}, errors.ScimErrorNoTarget
+	}
 	return data, nil
 }
