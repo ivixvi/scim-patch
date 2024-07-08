@@ -25,10 +25,11 @@ func path(s string) *filter.Path {
 func TestPatcher_Apply(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
-		name     string
-		op       scim.PatchOperation
-		data     scim.ResourceAttributes
-		expected scim.ResourceAttributes
+		name            string
+		op              scim.PatchOperation
+		data            scim.ResourceAttributes
+		expected        scim.ResourceAttributes
+		expectedChanged bool
 	}{
 		{
 			name: "Add operation",
@@ -42,6 +43,7 @@ func TestPatcher_Apply(t *testing.T) {
 			expected: scim.ResourceAttributes{
 				"displayName": "Bob Green",
 			},
+			expectedChanged: false,
 		},
 		{
 			name: "Replace operation",
@@ -55,6 +57,7 @@ func TestPatcher_Apply(t *testing.T) {
 			expected: scim.ResourceAttributes{
 				"displayName": "Bob Green",
 			},
+			expectedChanged: false,
 		},
 		{
 			name: "Remove operation - Core Singular Attribute",
@@ -65,7 +68,18 @@ func TestPatcher_Apply(t *testing.T) {
 			data: scim.ResourceAttributes{
 				"displayName": "Bob Green",
 			},
-			expected: scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Singular Attribute Not Changed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("displayName"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: false,
 		},
 		{
 			name: "Remove operation - Extention Singular Attribute - All Removed.",
@@ -78,7 +92,8 @@ func TestPatcher_Apply(t *testing.T) {
 					"department": "2B Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
 		},
 		{
 			name: "Remove operation - Extention Singular Attribute - Partially Removed.",
@@ -97,6 +112,35 @@ func TestPatcher_Apply(t *testing.T) {
 					"division": "Sales",
 				},
 			},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Extention Singular Attribute - URI Prefix not exists.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - Extention Singular Attribute - URI Prefix exists.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
+			},
+			expectedChanged: false,
 		},
 	}
 
@@ -107,11 +151,14 @@ func TestPatcher_Apply(t *testing.T) {
 			patcher := scimpatch.NewPatcher(schema.CoreUserSchema(), []schema.Schema{schema.ExtensionEnterpriseUser()})
 
 			// Apply the PatchOperation
-			result, err := patcher.Apply(tc.op, tc.data)
+			result, changed, err := patcher.Apply(tc.op, tc.data)
 			if err != nil {
 				t.Fatalf("Apply() returned an unexpected error: %v", err)
 			}
-
+			// Check if the result matches the expected data
+			if changed != tc.expectedChanged {
+				t.Errorf("actual: %v, expected: %v", changed, tc.expectedChanged)
+			}
 			// Check if the result matches the expected data
 			if !(fmt.Sprint(result) == fmt.Sprint(tc.expected)) {
 				t.Errorf("actual: %v, expected: %v", result, tc.expected)
@@ -144,7 +191,7 @@ func TestPatcher_ApplyError(t *testing.T) {
 			patcher := scimpatch.Patcher{}
 
 			// Apply the PatchOperation
-			_, err := patcher.Apply(tc.op, scim.ResourceAttributes{})
+			_, _, err := patcher.Apply(tc.op, scim.ResourceAttributes{})
 			if err == nil {
 				t.Fatalf("Apply() not returned error")
 			}
