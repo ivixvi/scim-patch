@@ -105,23 +105,27 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 // getScopedMap は 処理対象であるmapまでのスコープをたどり該当のmapを返却します
 func (p *Patcher) getScopedMap(op scim.PatchOperation, data scim.ResourceAttributes, attr schema.CoreAttribute) (scim.ResourceAttributes, string) {
 	// initialize returns
-	ok := true
 	attrName := attr.Name()
 
 	uriPrefix, containsURI := containsURIPrefix(op.Path)
 	if containsURI {
-		data, ok = data[uriPrefix].(map[string]interface{})
-		if !ok {
+		data_, ok := data[uriPrefix].(map[string]interface{})
+		switch ok {
+		case true:
+			data = data_
+		case false:
 			data = scim.ResourceAttributes{}
 		}
 	}
 
 	if attr.HasSubAttributes() && op.Path != nil && op.Path.AttributePath.SubAttribute != nil {
-		data, ok = data[op.Path.AttributePath.AttributeName].(map[string]interface{})
-		if !ok {
-			data = scim.ResourceAttributes{}
-		} else {
+		data_, ok := data[op.Path.AttributePath.AttributeName].(map[string]interface{})
+		switch ok {
+		case true:
+			data = data_
 			attrName = *op.Path.AttributePath.SubAttribute
+		case false:
+			data = scim.ResourceAttributes{}
 		}
 	}
 
