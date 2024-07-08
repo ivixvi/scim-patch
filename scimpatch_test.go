@@ -104,14 +104,7 @@ func TestPatcher_Apply(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
 			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.Patcher{
-				Schema: schema.CoreUserSchema(),
-				SchemaExtensions: []scim.SchemaExtension{
-					{
-						Schema: schema.ExtensionEnterpriseUser(),
-					},
-				},
-			}
+			patcher := scimpatch.NewPatcher(schema.CoreUserSchema(), []schema.Schema{schema.ExtensionEnterpriseUser()})
 
 			// Apply the PatchOperation
 			result, err := patcher.Apply(tc.op, tc.data)
