@@ -96,17 +96,20 @@ func (h testResourceHandler) Patch(r *http.Request, id string, operations []scim
 
 	// Apply PATCH operations
 	var err error
+	var changed bool
 	for _, op := range operations {
-		data.resourceAttributes, err = h.patcher.Apply(op, data.resourceAttributes)
+		data.resourceAttributes, changed, err = h.patcher.Apply(op, data.resourceAttributes)
 		if err != nil {
 			return scim.Resource{}, err
 		}
 	}
 
 	// store resource
-	now := time.Now()
-	data.meta.LastModified = &now
-	h.data[id] = data
+	if changed {
+		now := time.Now()
+		data.meta.LastModified = &now
+		h.data[id] = data
+	}
 
 	return scim.Resource{
 		ID:         id,

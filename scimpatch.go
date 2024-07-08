@@ -1,6 +1,7 @@
 package scimpatch
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/elimity-com/scim"
@@ -26,9 +27,9 @@ func NewPatcher(s schema.Schema, extentions []schema.Schema) *Patcher {
 }
 
 // Apply は RFC7644 3.5.2.  Modifying with PATCH の実装です。
-// data に op が適用された ResourceAttributes を返却します。
+// data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2
-func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
+func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
 	switch strings.ToLower(op.Op) {
 	case scim.PatchOperationAdd:
 		return p.add(op, data)
@@ -37,50 +38,55 @@ func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (s
 	case scim.PatchOperationRemove:
 		return p.remove(op, data)
 	}
-	return data, nil
+	return data, false, nil
 }
 
 // add は RFC7644 3.5.2.1. Add Operation の実装です。
-// data に op が適用された ResourceAttributes を返却します。
+// data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.1
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
-	return data, nil
+func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+	return data, false, nil
 }
 
 // replace は RFC7644 3.5.2.3. Replace Operation の実装です。
-// data に op が適用された ResourceAttributes を返却します。
+// data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.3
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
-	return data, nil
+func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+	return data, false, nil
 }
 
 // remove は RFC7644 3.5.2.2. Remove Operation の実装です。
-// data に op が適用された ResourceAttributes を返却します。
+// data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.2
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, error) {
+func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+	var changed = false
 	if op.Path == nil {
 		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
-		return scim.ResourceAttributes{}, errors.ScimErrorNoTarget
+		return scim.ResourceAttributes{}, false, errors.ScimErrorNoTarget
 	}
 	// Resolve Attribute
 	attrName := op.Path.AttributePath.AttributeName
 	attr, ok := p.containsAttribute(attrName)
 	if !ok {
-		return scim.ResourceAttributes{}, errors.ScimErrorInvalidPath
+		return scim.ResourceAttributes{}, false, errors.ScimErrorInvalidPath
 	}
 	if cannotBePatched(op.Op, attr) {
-		return scim.ResourceAttributes{}, errors.ScimErrorMutability
+		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
 	}
 	scopedMap := p.getScopedMap(op, data)
 	switch {
 	case !attr.HasSubAttributes() && !attr.MultiValued():
-		delete(scopedMap, attrName)
+		fmt.Printf("%v, %s", scopedMap, attrName)
+		if _, ok := scopedMap[attrName]; ok {
+			delete(scopedMap, attrName)
+			changed = true
+		}
 	}
 	data = p.setScopedMap(op, data, scopedMap)
-	return data, nil
+	return data, changed, nil
 }
 
 // containsAttribute は attrName がサーバーで利用されているスキーマの属性名として適切かを確認し、取得します。
