@@ -76,16 +76,18 @@ func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (
 	if cannotBePatched(op.Op, attr) {
 		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
 	}
-	scopedMap := p.getScopedMap(op, data)
-	switch {
-	case !attr.HasSubAttributes() && !attr.MultiValued():
-		fmt.Printf("%v, %s", scopedMap, attrName)
-		if _, ok := scopedMap[attrName]; ok {
-			delete(scopedMap, attrName)
+	switch attr.MultiValued() {
+	case true:
+	case false:
+		scopedMap, scopedAttr := p.getScopedMap(op, data, attr)
+		fmt.Printf("\n %v, %s \n", scopedMap, scopedAttr)
+		if _, ok := scopedMap[scopedAttr]; ok {
+			delete(scopedMap, scopedAttr)
 			changed = true
 		}
+		data = p.setScopedMap(op, data, scopedMap, attr)
 	}
-	data = p.setScopedMap(op, data, scopedMap)
+
 	return data, changed, nil
 }
 
@@ -101,21 +103,41 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 }
 
 // getScopedMap は 処理対象であるmapまでのスコープをたどり該当のmapを返却します
-func (p *Patcher) getScopedMap(op scim.PatchOperation, data scim.ResourceAttributes) scim.ResourceAttributes {
+func (p *Patcher) getScopedMap(op scim.PatchOperation, data scim.ResourceAttributes, attr schema.CoreAttribute) (scim.ResourceAttributes, string) {
+	// initialize returns
+	ok := true
+	attrName := attr.Name()
+
 	uriPrefix, containsURI := containsURIPrefix(op.Path)
 	if containsURI {
-		data, ok := data[uriPrefix].(map[string]interface{})
+		data, ok = data[uriPrefix].(map[string]interface{})
 		if !ok {
 			data = scim.ResourceAttributes{}
 		}
-		return data
 	}
 
-	return data
+	if attr.HasSubAttributes() && op.Path != nil && op.Path.AttributePath.SubAttribute != nil {
+		data, ok = data[op.Path.AttributePath.AttributeName].(map[string]interface{})
+		if !ok {
+			data = scim.ResourceAttributes{}
+		} else {
+			attrName = *op.Path.AttributePath.SubAttribute
+		}
+	}
+
+	return data, attrName
 }
 
 // setScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換したdataを返却します
-func (p *Patcher) setScopedMap(op scim.PatchOperation, data scim.ResourceAttributes, scopedMap scim.ResourceAttributes) scim.ResourceAttributes {
+func (p *Patcher) setScopedMap(op scim.PatchOperation, data scim.ResourceAttributes, scopedMap scim.ResourceAttributes, attr schema.CoreAttribute) scim.ResourceAttributes {
+	if attr.HasSubAttributes() && op.Path != nil && op.Path.AttributePath.SubAttribute != nil {
+		if len(scopedMap) == 0 {
+			delete(data, op.Path.AttributePath.AttributeName)
+		} else {
+			data[op.Path.AttributePath.AttributeName] = scopedMap
+		}
+	}
+
 	uriPrefix, containsURI := containsURIPrefix(op.Path)
 	if containsURI {
 		if len(scopedMap) == 0 {

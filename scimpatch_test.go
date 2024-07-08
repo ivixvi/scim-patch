@@ -59,6 +59,7 @@ func TestPatcher_Apply(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Remove Singular Attribute
 		{
 			name: "Remove operation - Core Singular Attribute",
 			op: scim.PatchOperation{
@@ -140,6 +141,74 @@ func TestPatcher_Apply(t *testing.T) {
 					"division": "Sales",
 				},
 			},
+			expectedChanged: false,
+		},
+		// Remove Complex Attributes
+		{
+			name: "Remove operation - Core Complex Attribute - SubAttributes Not Specified.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name"),
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute - SubAttributes Specified.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name.familyName"),
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"givenName": "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute - SubAttributes Specified - Remove Attributes",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name.familyName"),
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute Not Changed. - SubAttributes not Specified ",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute Not Changed. - SubAttributes Specified ",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name.familyName"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
 			expectedChanged: false,
 		},
 	}
