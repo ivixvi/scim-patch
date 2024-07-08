@@ -23,7 +23,7 @@ type testResourceHandler struct {
 	data             map[string]testData
 	schema           schema.Schema
 	schemaExtensions []scim.SchemaExtension
-	patcher          scimpatch.Patcher
+	patcher          *scimpatch.Patcher
 }
 
 // notImplemented is error returns 501 Not Implemented.
