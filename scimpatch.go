@@ -1,7 +1,6 @@
 package scimpatch
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/elimity-com/scim"
@@ -80,7 +79,6 @@ func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (
 	case true:
 	case false:
 		scopedMap, scopedAttr := p.getScopedMap(op, data, attr)
-		fmt.Printf("\n %v, %s \n", scopedMap, scopedAttr)
 		if _, ok := scopedMap[scopedAttr]; ok {
 			delete(scopedMap, scopedAttr)
 			changed = true
@@ -100,55 +98,4 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 		}
 	}
 	return schema.CoreAttribute{}, false
-}
-
-// getScopedMap は 処理対象であるmapまでのスコープをたどり該当のmapを返却します
-func (p *Patcher) getScopedMap(op scim.PatchOperation, data scim.ResourceAttributes, attr schema.CoreAttribute) (scim.ResourceAttributes, string) {
-	// initialize returns
-	attrName := attr.Name()
-
-	uriPrefix, containsURI := containsURIPrefix(op.Path)
-	if containsURI {
-		data_, ok := data[uriPrefix].(map[string]interface{})
-		switch ok {
-		case true:
-			data = data_
-		case false:
-			data = scim.ResourceAttributes{}
-		}
-	}
-
-	if attr.HasSubAttributes() && op.Path != nil && op.Path.AttributePath.SubAttribute != nil {
-		data_, ok := data[op.Path.AttributePath.AttributeName].(map[string]interface{})
-		switch ok {
-		case true:
-			data = data_
-			attrName = *op.Path.AttributePath.SubAttribute
-		case false:
-			data = scim.ResourceAttributes{}
-		}
-	}
-
-	return data, attrName
-}
-
-// setScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換したdataを返却します
-func (p *Patcher) setScopedMap(op scim.PatchOperation, data scim.ResourceAttributes, scopedMap scim.ResourceAttributes, attr schema.CoreAttribute) scim.ResourceAttributes {
-	if attr.HasSubAttributes() && op.Path != nil && op.Path.AttributePath.SubAttribute != nil {
-		if len(scopedMap) == 0 {
-			delete(data, op.Path.AttributePath.AttributeName)
-		} else {
-			data[op.Path.AttributePath.AttributeName] = scopedMap
-		}
-	}
-
-	uriPrefix, containsURI := containsURIPrefix(op.Path)
-	if containsURI {
-		if len(scopedMap) == 0 {
-			delete(data, uriPrefix)
-		} else {
-			data[uriPrefix] = scopedMap
-		}
-	}
-	return data
 }
