@@ -59,6 +59,7 @@ func TestPatcher_Apply(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Remove Singular Attribute
 		{
 			name: "Remove operation - Core Singular Attribute",
 			op: scim.PatchOperation{
@@ -142,6 +143,166 @@ func TestPatcher_Apply(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Remove Complex Attributes
+		{
+			name: "Remove operation - Core Complex Attribute - SubAttributes Not Specified.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name"),
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute - SubAttributes Specified.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name.familyName"),
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"givenName": "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute - SubAttributes Specified - Remove Attributes",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name.familyName"),
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute Not Changed. - SubAttributes not Specified ",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - Core Complex Attribute Not Changed. - SubAttributes Specified ",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("name.familyName"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - Extention Complex Attribute - Attribute Removed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"manager": interface{}(
+						map[string]interface{}{
+							"value":       "0001",
+							"displayName": "Bob Green",
+						},
+					),
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Extention Complex Attribute - All Removed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"manager": interface{}(
+						map[string]interface{}{
+							"value": "0001",
+						},
+					),
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Extention Complex Attribute - Partially Removed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"manager": interface{}(
+						map[string]interface{}{
+							"value":       "0001",
+							"displayName": "Bob Green",
+						},
+					),
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"manager": interface{}(
+						map[string]interface{}{
+							"displayName": "Bob Green",
+						},
+					),
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - Extention Complex Attribute - URI Prefix not exists.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - Extention Complex Attribute - URI Prefix exists.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
+			},
+			expectedChanged: false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -157,11 +318,11 @@ func TestPatcher_Apply(t *testing.T) {
 			}
 			// Check if the result matches the expected data
 			if changed != tc.expectedChanged {
-				t.Errorf("actual: %v, expected: %v", changed, tc.expectedChanged)
+				t.Errorf("changed:\n    actual  : %v\n    expected: %v", changed, tc.expectedChanged)
 			}
 			// Check if the result matches the expected data
 			if !(fmt.Sprint(result) == fmt.Sprint(tc.expected)) {
-				t.Errorf("actual: %v, expected: %v", result, tc.expected)
+				t.Errorf("result:\n    actual  : %v\n    expected: %v", result, tc.expected)
 			}
 		})
 	}
