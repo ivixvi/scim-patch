@@ -78,12 +78,14 @@ func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (
 	switch attr.MultiValued() {
 	case true:
 	case false:
-		scopedMap, scopedAttr := p.getScopedMap(op, data, attr)
+		n := NewScopeNavigator(op, data, attr)
+		scopedMap, scopedAttr := n.GetScopedMap()
 		if _, ok := scopedMap[scopedAttr]; ok {
 			delete(scopedMap, scopedAttr)
 			changed = true
 		}
-		data = p.setScopedMap(op, data, scopedMap, attr)
+		n.ApplyScopedMap(scopedMap)
+		data = n.GetMap()
 	}
 
 	return data, changed, nil
