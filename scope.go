@@ -43,7 +43,7 @@ func (n *ScopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 	}
 
 	data := n.data
-	uriPrefix, containsURI := containsURIPrefix(n.op.Path)
+	uriPrefix, containsURI := n.containsURIPrefix()
 	if containsURI {
 		if len(uriScoped) == 0 {
 			delete(data, uriPrefix)
@@ -58,33 +58,49 @@ func (n *ScopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 // getURIScopedMap は URIに応じて、処理対象のMapを返却します
 func (n *ScopeNavigator) getURIScopedMap() scim.ResourceAttributes {
 	uriScoped := n.data
-	uriPrefix, containsURI := containsURIPrefix(n.op.Path)
-	if containsURI {
-		data_, ok := n.data[uriPrefix].(map[string]interface{})
-		switch ok {
-		case true:
-			uriScoped = data_
-		case false:
-			uriScoped = scim.ResourceAttributes{}
-		}
-	}
+	uriPrefix, ok := n.containsURIPrefix()
+	uriScoped = n.navigateToMap(uriScoped, uriPrefix, ok)
 	return uriScoped
 }
 
 // getAttributeScopedMap は 属性に応じて、処理対象のMapを返却します
 func (n *ScopeNavigator) getAttributeScopedMap() (scim.ResourceAttributes, string) {
 	// initialize returns
-	attrName := n.attr.Name()
 	data := n.getURIScopedMap()
-	if n.attr.HasSubAttributes() && n.op.Path != nil && n.op.Path.AttributePath.SubAttribute != nil {
-		data_, ok := data[n.op.Path.AttributePath.AttributeName].(map[string]interface{})
+	subAttrName, ok := n.requiredSubAttributes()
+	data = n.navigateToMap(data, n.attr.Name(), ok)
+	return data, subAttrName
+}
+
+func (n *ScopeNavigator) navigateToMap(data map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
+	if ok {
+		data_, ok := data[attr].(map[string]interface{})
 		switch ok {
 		case true:
 			data = data_
-			attrName = *n.op.Path.AttributePath.SubAttribute
 		case false:
 			data = scim.ResourceAttributes{}
 		}
 	}
-	return data, attrName
+	return data
+}
+
+func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
+	ok := false
+	uriPrefix := ""
+	if n.op.Path != nil && n.op.Path.AttributePath.URIPrefix != nil {
+		ok = true
+		uriPrefix = *n.op.Path.AttributePath.URIPrefix
+	}
+	return uriPrefix, ok
+}
+
+func (n *ScopeNavigator) requiredSubAttributes() (string, bool) {
+	ok := false
+	subAttr := n.attr.Name()
+	if n.attr.HasSubAttributes() && n.op.Path != nil && n.op.Path.AttributePath.SubAttribute != nil {
+		ok = true
+		subAttr = *n.op.Path.AttributePath.SubAttribute
+	}
+	return subAttr, ok
 }
