@@ -1,8 +1,6 @@
 package scimpatch
 
 import (
-	"fmt"
-
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/schema"
 )
@@ -34,24 +32,13 @@ func (n *ScopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
 // ApplyScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換します
 func (n *ScopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 	uriScoped := n.getURIScopedMap()
-	if n.attr.HasSubAttributes() && n.op.Path != nil && n.op.Path.AttributePath.SubAttribute != nil {
-		if len(scopedMap) == 0 {
-			delete(uriScoped, n.op.Path.AttributePath.AttributeName)
-		} else {
-			uriScoped[n.op.Path.AttributePath.AttributeName] = scopedMap
-		}
+	if _, required := n.requiredSubAttributes(); required {
+		uriScoped = n.attatchToMap(uriScoped, scopedMap, n.attr.Name(), required)
 	}
 
 	data := n.data
 	uriPrefix, containsURI := n.containsURIPrefix()
-	if containsURI {
-		if len(uriScoped) == 0 {
-			delete(data, uriPrefix)
-		} else {
-			data[uriPrefix] = uriScoped
-		}
-	}
-	fmt.Printf("%v\n", data)
+	data = n.attatchToMap(data, uriScoped, uriPrefix, containsURI)
 	n.data = data
 }
 
@@ -72,6 +59,7 @@ func (n *ScopeNavigator) getAttributeScopedMap() (scim.ResourceAttributes, strin
 	return data, subAttrName
 }
 
+// navigateToMap は必要に応じて、パスをたどる処理です
 func (n *ScopeNavigator) navigateToMap(data map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
 	if ok {
 		data_, ok := data[attr].(map[string]interface{})
@@ -85,6 +73,19 @@ func (n *ScopeNavigator) navigateToMap(data map[string]interface{}, attr string,
 	return data
 }
 
+// attatchToMap は必要に応じて、パスを戻す処理です
+func (n *ScopeNavigator) attatchToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
+	if ok {
+		if len(scoped) == 0 {
+			delete(data, attr)
+		} else {
+			data[attr] = scoped
+		}
+	}
+	return data
+}
+
+// containsURIPrefix は対象の属性がURIPrefixを持ったmapの中に格納されているかどうかを判断します
 func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
 	ok := false
 	uriPrefix := ""
@@ -95,6 +96,7 @@ func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
 	return uriPrefix, ok
 }
 
+// requiredSubAttributes は対象の属性がサブ属性を保持したマップであるかどうかと、サブ属性が対象となったPatchOpeartionかどうかを判断します
 func (n *ScopeNavigator) requiredSubAttributes() (string, bool) {
 	ok := false
 	subAttr := n.attr.Name()
