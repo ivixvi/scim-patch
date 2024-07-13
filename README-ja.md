@@ -24,4 +24,4 @@ SCIM2.0のPatch操作の仕様の幅が広く、また、IdP毎の差異を吸�
 構想としては以下のIssueが近く、この例のような形で実装できることを期待しています。
 https://github.com/elimity-com/scim/issues/171
 
-現在の実装における利用例は [example](./example/README-ja.md) をご確認ください。
+現在の実装における利用例は [example](./_example/README-ja.md) をご確認ください。

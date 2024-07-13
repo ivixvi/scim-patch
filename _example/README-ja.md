@@ -11,6 +11,6 @@ PATCHを試す上で必要な以下4エンドポイントが実装されてい�
 ## 使い方
 
 ```shell
-$ cd path/to/scim-patch/example
+$ cd path/to/scim-patch/_example
 $ go run .\...
 ```

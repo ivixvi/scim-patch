@@ -11,6 +11,6 @@ The following 4 endpoints necessary for testing PATCH operations are implemented
 ## Usage
 
 ```shell
-$ cd path/to/scim-patch/example
+$ cd path/to/scim-patch/_example
 $ go run .\...
 ```
