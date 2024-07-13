@@ -59,6 +59,7 @@ func (n *ScopeNavigator) getAttributeScopedMap() (scim.ResourceAttributes, strin
 	return data, subAttrName
 }
 
+// navigateToMap は必要に応じて、パスをたどる処理です
 func (n *ScopeNavigator) navigateToMap(data map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
 	if ok {
 		data_, ok := data[attr].(map[string]interface{})
@@ -72,6 +73,7 @@ func (n *ScopeNavigator) navigateToMap(data map[string]interface{}, attr string,
 	return data
 }
 
+// attatchToMap は必要に応じて、パスを戻す処理です
 func (n *ScopeNavigator) attatchToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
 	if ok {
 		if len(scoped) == 0 {
@@ -83,6 +85,7 @@ func (n *ScopeNavigator) attatchToMap(data map[string]interface{}, scoped map[st
 	return data
 }
 
+// containsURIPrefix は対象の属性がURIPrefixを持ったmapの中に格納されているかどうかを判断します
 func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
 	ok := false
 	uriPrefix := ""
@@ -93,6 +96,7 @@ func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
 	return uriPrefix, ok
 }
 
+// requiredSubAttributes は対象の属性がサブ属性を保持したマップであるかどうかと、サブ属性が対象となったPatchOpeartionかどうかを判断します
 func (n *ScopeNavigator) requiredSubAttributes() (string, bool) {
 	ok := false
 	subAttr := n.attr.Name()
