@@ -22,4 +22,4 @@ Additionally, this library depends on the following SCIM-related implementations
 The following issue is relevant, and we aim to implement it to be usable in a form similar to this example:
 https://github.com/elimity-com/scim/issues/171
 
-For an example of usage in the current implementation, please refer to [example](./example/README.md).
+For an example of usage in the current implementation, please refer to [example](./_example/README.md).
