@@ -1,8 +1,6 @@
 package scimpatch
 
 import (
-	"fmt"
-
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/schema"
 )
@@ -34,24 +32,13 @@ func (n *ScopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
 // ApplyScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換します
 func (n *ScopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 	uriScoped := n.getURIScopedMap()
-	if n.attr.HasSubAttributes() && n.op.Path != nil && n.op.Path.AttributePath.SubAttribute != nil {
-		if len(scopedMap) == 0 {
-			delete(uriScoped, n.op.Path.AttributePath.AttributeName)
-		} else {
-			uriScoped[n.op.Path.AttributePath.AttributeName] = scopedMap
-		}
+	if _, required := n.requiredSubAttributes(); required {
+		uriScoped = n.attatchToMap(uriScoped, scopedMap, n.attr.Name(), required)
 	}
 
 	data := n.data
 	uriPrefix, containsURI := n.containsURIPrefix()
-	if containsURI {
-		if len(uriScoped) == 0 {
-			delete(data, uriPrefix)
-		} else {
-			data[uriPrefix] = uriScoped
-		}
-	}
-	fmt.Printf("%v\n", data)
+	data = n.attatchToMap(data, uriScoped, uriPrefix, containsURI)
 	n.data = data
 }
 
@@ -80,6 +67,17 @@ func (n *ScopeNavigator) navigateToMap(data map[string]interface{}, attr string,
 			data = data_
 		case false:
 			data = scim.ResourceAttributes{}
+		}
+	}
+	return data
+}
+
+func (n *ScopeNavigator) attatchToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
+	if ok {
+		if len(scoped) == 0 {
+			delete(data, attr)
+		} else {
+			data[attr] = scoped
 		}
 	}
 	return data
