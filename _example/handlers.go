@@ -10,7 +10,7 @@ import (
 	"github.com/elimity-com/scim/errors"
 	"github.com/elimity-com/scim/optional"
 	"github.com/elimity-com/scim/schema"
-	"github.com/ivixvi/scimpatch"
+	scimpatch "github.com/ivixvi/scim-patch"
 )
 
 type testData struct {

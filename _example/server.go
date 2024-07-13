@@ -6,7 +6,7 @@ import (
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/optional"
 	"github.com/elimity-com/scim/schema"
-	"github.com/ivixvi/scimpatch"
+	scimpatch "github.com/ivixvi/scim-patch"
 )
 
 func newTestServer() scim.Server {
