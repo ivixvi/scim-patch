@@ -1,4 +1,4 @@
-module github.com/ivixvi/scimpatch
+module github.com/ivixvi/scim-patch
 
 go 1.22
 

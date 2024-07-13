@@ -7,7 +7,7 @@ import (
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/errors"
 	"github.com/elimity-com/scim/schema"
-	"github.com/ivixvi/scimpatch"
+	scimpatch "github.com/ivixvi/scim-patch"
 	filter "github.com/scim2/filter-parser/v2"
 )
 
