@@ -65,11 +65,11 @@ func (n *ScopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
 }
 
 // GetScopedMap は 属性に応じて、処理対象のMapを返却します
-func (n *ScopeNavigator) GetScopedMapSlice() ([]map[string]interface{}, string) {
+func (n *ScopeNavigator) GetScopedMapSlice() []map[string]interface{} {
 	// initialize returns
 	scoped := n.GetURIScopedMap()
 	scopedSlice := navigateToMapSlice(scoped, n.attr.Name(), true)
-	return scopedSlice, n.attr.Name()
+	return scopedSlice
 }
 
 // containsURIPrefix は対象の属性がURIPrefixを持ったmapの中に格納されているかどうかを判断します

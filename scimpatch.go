@@ -78,6 +78,15 @@ func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (
 
 	n := NewScopeNavigator(op, data, attr)
 	switch {
+	case attr.MultiValued() && op.Path.ValueExpression == nil:
+		newValues := []map[string]interface{}{}
+		oldValues := n.GetScopedMapSlice()
+		for _, oldValue := range oldValues {
+			if isMatchExpression(oldValue, op.Path.ValueExpression) {
+				newValues = append(newValues, oldValue)
+			}
+		}
+		n.ApplyScopedMapSlice(newValues)
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
 		if _, ok := scopedMap[scopedAttr]; ok {
