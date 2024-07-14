@@ -1,11 +1,10 @@
 package scimpatch
 
-import "github.com/scim2/filter-parser/v2"
+import (
+	"github.com/scim2/filter-parser/v2"
+)
 
 func isMatchExpression(value map[string]interface{}, expr filter.Expression) bool {
-	if expr == nil {
-		return true
-	}
 	switch typedExpr := expr.(type) {
 	case *filter.AttributeExpression:
 		attrValue, ok := value[typedExpr.AttributePath.AttributeName]
