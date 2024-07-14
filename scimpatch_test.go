@@ -303,6 +303,124 @@ func TestPatcher_Apply(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		{
+			name: "Remove operation - MultiValued Complex Attribute - Direct Remove",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("emails"),
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi@example.com",
+						"type":  "home",
+					},
+				},
+			},
+			expected:        scim.ResourceAttributes{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - MultiValued Complex Attribute - Item Remove",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path(`emails[type eq "home"]`),
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi@example.com",
+						"type":  "home",
+					},
+					map[string]interface{}{
+						"value": "ivixvi-work@example.com",
+						"type":  "work",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi-work@example.com",
+						"type":  "work",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - MultiValued Complex Attribute - SubAttribute Remove",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path(`emails[type eq "home"].primary`),
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value":   "ivixvi@example.com",
+						"type":    "home",
+						"primary": true,
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi@example.com",
+						"type":  "home",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - MultiValued Complex Attribute - Item Remove. No Changed",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path(`emails[type eq "home"]`),
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi-work@example.com",
+						"type":  "work",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi-work@example.com",
+						"type":  "work",
+					},
+				},
+			},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - MultiValued Complex Attribute - SubAttribute Remove. no Changed.",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path(`emails[type eq "home"].primary`),
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi@example.com",
+						"type":  "home",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"value": "ivixvi@example.com",
+						"type":  "home",
+					},
+				},
+			},
+			expectedChanged: false,
+		},
 	}
 
 	for _, tc := range testCases {

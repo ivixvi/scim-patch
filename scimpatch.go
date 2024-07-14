@@ -75,10 +75,39 @@ func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (
 	if cannotBePatched(op.Op, attr) {
 		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
 	}
-	switch attr.MultiValued() {
-	case true:
-	case false:
-		n := NewScopeNavigator(op, data, attr)
+
+	n := NewScopeNavigator(op, data, attr)
+	switch {
+	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
+		newValues := []map[string]interface{}{}
+		oldValues := n.GetScopedMapSlice()
+		for _, oldValue := range oldValues {
+			if !isMatchExpression(oldValue, op.Path.ValueExpression) {
+				newValues = append(newValues, oldValue)
+			} else {
+				_, ok := oldValue[*op.Path.SubAttribute]
+				if ok {
+					changed = true
+					delete(oldValue, *op.Path.SubAttribute)
+					newValues = append(newValues, oldValue)
+				} else {
+					newValues = append(newValues, oldValue)
+				}
+			}
+		}
+		n.ApplyScopedMapSlice(newValues)
+	case attr.MultiValued() && op.Path.ValueExpression != nil:
+		newValues := []map[string]interface{}{}
+		oldValues := n.GetScopedMapSlice()
+		for _, oldValue := range oldValues {
+			if !isMatchExpression(oldValue, op.Path.ValueExpression) {
+				newValues = append(newValues, oldValue)
+			} else {
+				changed = true
+			}
+		}
+		n.ApplyScopedMapSlice(newValues)
+	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
 		if _, ok := scopedMap[scopedAttr]; ok {
 			delete(scopedMap, scopedAttr)
