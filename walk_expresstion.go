@@ -4,6 +4,7 @@ import (
 	"github.com/scim2/filter-parser/v2"
 )
 
+// isMatchExpression は、 value が expr の条件に一致するかどうかを確認します
 func isMatchExpression(value map[string]interface{}, expr filter.Expression) bool {
 	switch typedExpr := expr.(type) {
 	case *filter.AttributeExpression:
@@ -16,5 +17,5 @@ func isMatchExpression(value map[string]interface{}, expr filter.Expression) boo
 			return typedExpr.CompareValue == attrValue
 		}
 	}
-	return true
+	return false
 }
