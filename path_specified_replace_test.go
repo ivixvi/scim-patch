@@ -19,7 +19,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 		expected        scim.ResourceAttributes
 		expectedChanged bool
 	}{
-		// Replace Singular Attribute
+		// Singular Attribute
 		{
 			name: "Replace operation - Core Singular Attributes - replace",
 			op: scim.PatchOperation{
@@ -63,9 +63,9 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
-		// Replace Complex Attribute
+		// Complex Attribute
 		{
-			name: "Replace operation - Core Singular Attributes - replace",
+			name: "Replace operation - Core Complex Attributes - replace",
 			op: scim.PatchOperation{
 				Op:    "replace",
 				Path:  path(`name.familyName`),
@@ -86,7 +86,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Replace operation - Core Singular Attributes - no value",
+			name: "Replace operation - Core Complex Attributes - no value",
 			op: scim.PatchOperation{
 				Op:    "replace",
 				Path:  path(`name.familyName`),
@@ -106,7 +106,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Replace operation - Core Singular Attributes - no changed.",
+			name: "Replace operation - Core Complex Attributes - no changed.",
 			op: scim.PatchOperation{
 				Op:    "replace",
 				Path:  path(`name.familyName`),
@@ -127,7 +127,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			expectedChanged: false,
 		},
 		{
-			name: "Replace operation - Core Singular Attributes - map specified replace",
+			name: "Replace operation - Core Complex Attributes - map specified replace",
 			op: scim.PatchOperation{
 				Op:   "replace",
 				Path: path(`name`),
@@ -339,6 +339,17 @@ func TestPathSpecifiedReplace(t *testing.T) {
 					},
 				},
 			},
+			expectedChanged: false,
+		},
+		{
+			name: "Replace operation - MultiValued Complex Attributes - Filter & Value addition",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`emails[type eq "work"].value`),
+				Value: "ivixvi@example.com",
+			},
+			data:            scim.ResourceAttributes{},
+			expected:        scim.ResourceAttributes{},
 			expectedChanged: false,
 		},
 	}
