@@ -9,20 +9,48 @@ import (
 )
 
 type Patcher struct {
-	schema  schema.Schema
-	schemas map[string]schema.Schema
+	schema      schema.Schema
+	schemas     map[string]schema.Schema
+	additionnar Operator
+	replacer    Operator
+	remover     Operator
+}
+
+type PatcherOpts struct {
+	Additionnar *Operator
+	Replacer    *Operator
+	Remover     *Operator
 }
 
 // NewPatcher は Pathcher の実態を取得します。
-func NewPatcher(s schema.Schema, extentions []schema.Schema) *Patcher {
+func NewPatcher(
+	s schema.Schema,
+	extentions []schema.Schema,
+	opts *PatcherOpts,
+) *Patcher {
 	schemas := map[string]schema.Schema{s.ID: s}
 	for _, s := range extentions {
 		schemas[s.ID] = s
 	}
-	return &Patcher{
-		schema:  s,
-		schemas: schemas,
+	patcher := &Patcher{
+		schema:      s,
+		schemas:     schemas,
+		additionnar: additionnerInstance,
+		replacer:    replacerInstance,
+		remover:     removerInstance,
 	}
+	if opts != nil {
+		if opts.Additionnar != nil {
+			patcher.additionnar = *opts.Additionnar
+		}
+		if opts.Replacer != nil {
+			patcher.replacer = *opts.Replacer
+		}
+		if opts.Remover != nil {
+			patcher.remover = *opts.Remover
+		}
+	}
+	return patcher
 }
 
 // Apply は RFC7644 3.5.2.  Modifying with PATCH の実装です。
@@ -46,9 +74,9 @@ func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (s
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
 	if op.Path == nil {
-		return p.pathUnspecifiedOperate(op, data, additionner)
+		return p.pathUnspecifiedOperate(op, data, p.additionnar)
 	}
-	return p.pathSpecifiedOperate(op, data, additionner)
+	return p.pathSpecifiedOperate(op, data, p.additionnar)
 }
 
 // replace は RFC7644 3.5.2.3. Replace Operation の実装です。
@@ -57,9 +85,9 @@ func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (sci
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
 	if op.Path == nil {
-		return p.pathUnspecifiedOperate(op, data, replacer)
+		return p.pathUnspecifiedOperate(op, data, p.replacer)
 	}
-	return p.pathSpecifiedOperate(op, data, replacer)
+	return p.pathSpecifiedOperate(op, data, p.replacer)
 }
 
 // remove は RFC7644 3.5.2.2. Remove Operation の実装です。
@@ -71,7 +99,7 @@ func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (
 		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
 		return scim.ResourceAttributes{}, false, errors.ScimErrorNoTarget
 	}
-	return p.pathSpecifiedOperate(op, data, remover)
+	return p.pathSpecifiedOperate(op, data, p.remover)
 }
 
 // containsAttribute は attrName がサーバーで利用されているスキーマの属性名として適切かを確認し、取得します。
@@ -100,7 +128,7 @@ func (p *Patcher) pathSpecifiedOperate(
 	if cannotBePatched(op.Op, attr) {
 		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
 	}
-	n := NewScopeNavigator(op, data, attr)
+	n := newScopeNavigator(op, data, attr)
 	switch {
 	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
 		var newValues []map[string]interface{}

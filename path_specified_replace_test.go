@@ -358,7 +358,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
 			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.NewPatcher(schema.CoreUserSchema(), []schema.Schema{schema.ExtensionEnterpriseUser()})
+			patcher := scimpatch.NewPatcher(schema.CoreUserSchema(), []schema.Schema{schema.ExtensionEnterpriseUser()}, nil)
 
 			// Apply the PatchOperation
 			result, changed, err := patcher.Apply(tc.op, tc.data)

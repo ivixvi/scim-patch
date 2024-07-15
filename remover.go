@@ -2,11 +2,11 @@ package scimpatch
 
 import "github.com/scim2/filter-parser/v2"
 
-type Remover struct{}
+type remover struct{}
 
-var remover *Remover
+var removerInstance *remover
 
-func (r *Remover) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
+func (r *remover) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
 	if _, ok := scopedMap[scopedAttr]; ok {
 		delete(scopedMap, scopedAttr)
 		return scopedMap, true
@@ -14,7 +14,7 @@ func (r *Remover) Direct(scopedMap map[string]interface{}, scopedAttr string, va
 	return scopedMap, false
 }
 
-func (r *Remover) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
+func (r *remover) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
 	newValues := []interface{}{}
 	for _, oldValue := range scopedSlice {
@@ -27,7 +27,7 @@ func (r *Remover) ByValueForItem(scopedSlice []interface{}, value interface{}) (
 	return newValues, changed
 }
 
-func (r *Remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
+func (r *remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
@@ -40,7 +40,7 @@ func (r *Remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, 
 	return newValues, changed
 }
 
-func (r *Remover) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
+func (r *remover) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
