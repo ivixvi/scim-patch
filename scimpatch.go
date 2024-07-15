@@ -16,13 +16,15 @@ type Patcher struct {
 	remover     Operator
 }
 
+// PatcherOpts を利用することで Pathcerが利用する各操作の Operator を上書きすることができます。
+// 指定しない場合はパッケージデフォルトで実装されている Operator が利用されます。
 type PatcherOpts struct {
 	Additionnar *Operator
 	Replacer    *Operator
 	Remover     *Operator
 }
 
-// NewPatcher は Pathcher の実態を取得します。
+// NewPatcher は Patcher の実態を取得します。
 func NewPatcher(
 	s schema.Schema,
 	extentions []schema.Schema,

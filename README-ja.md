@@ -1,4 +1,7 @@
 # scim-patch
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/ivixvi/scim-patch.svg)](https://pkg.go.dev/github.com/ivixvi/scim-patch)
+
 SCIM2.0 Patch 操作のGo言語実装です
 
 
