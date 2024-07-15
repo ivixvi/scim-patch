@@ -5,14 +5,14 @@ import (
 	"github.com/elimity-com/scim/schema"
 )
 
-type ScopeNavigator struct {
+type scopeNavigator struct {
 	op   scim.PatchOperation
 	data scim.ResourceAttributes
 	attr schema.CoreAttribute
 }
 
-func NewScopeNavigator(op scim.PatchOperation, data scim.ResourceAttributes, attr schema.CoreAttribute) *ScopeNavigator {
-	return &ScopeNavigator{
+func newScopeNavigator(op scim.PatchOperation, data scim.ResourceAttributes, attr schema.CoreAttribute) *scopeNavigator {
+	return &scopeNavigator{
 		op:   op,
 		data: data,
 		attr: attr,
@@ -20,12 +20,12 @@ func NewScopeNavigator(op scim.PatchOperation, data scim.ResourceAttributes, att
 }
 
 // GetMap は 処理対象であるmapまでのスコープをたどり該当のmapを返却します
-func (n *ScopeNavigator) GetMap() scim.ResourceAttributes {
+func (n *scopeNavigator) GetMap() scim.ResourceAttributes {
 	return n.data
 }
 
 // ApplyScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換します
-func (n *ScopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
+func (n *scopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 	uriScoped := n.GetURIScopedMap()
 	if _, required := n.requiredSubAttributes(); required {
 		uriScoped = attatchToMap(uriScoped, scopedMap, n.attr.Name(), required)
@@ -38,7 +38,7 @@ func (n *ScopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 }
 
 // ApplyScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換します
-func (n *ScopeNavigator) ApplyScopedMapSlice(scopedMapSilce []map[string]interface{}) {
+func (n *scopeNavigator) ApplyScopedMapSlice(scopedMapSilce []map[string]interface{}) {
 	uriScoped := n.GetURIScopedMap()
 	uriScoped = attatchToMapSlice(uriScoped, scopedMapSilce, n.attr.Name(), true)
 	data := n.data
@@ -48,7 +48,7 @@ func (n *ScopeNavigator) ApplyScopedMapSlice(scopedMapSilce []map[string]interfa
 }
 
 // GetURIScopedMap は URIに応じて、処理対象のMapを返却します
-func (n *ScopeNavigator) GetURIScopedMap() map[string]interface{} {
+func (n *scopeNavigator) GetURIScopedMap() map[string]interface{} {
 	uriScoped := n.data
 	uriPrefix, ok := n.containsURIPrefix()
 	uriScoped = navigateToMap(uriScoped, uriPrefix, ok)
@@ -56,7 +56,7 @@ func (n *ScopeNavigator) GetURIScopedMap() map[string]interface{} {
 }
 
 // GetScopedMap は 属性に応じて、処理対象のMapを返却します
-func (n *ScopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
+func (n *scopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
 	// initialize returns
 	data := n.GetURIScopedMap()
 	subAttrName, ok := n.requiredSubAttributes()
@@ -65,7 +65,7 @@ func (n *ScopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
 }
 
 // GetScopedMap は 属性に応じて、処理対象のMapを返却します
-func (n *ScopeNavigator) GetScopedMapSlice() []map[string]interface{} {
+func (n *scopeNavigator) GetScopedMapSlice() []map[string]interface{} {
 	// initialize returns
 	scoped := n.GetURIScopedMap()
 	scopedSlice := navigateToMapSlice(scoped, n.attr.Name(), true)
@@ -73,7 +73,7 @@ func (n *ScopeNavigator) GetScopedMapSlice() []map[string]interface{} {
 }
 
 // containsURIPrefix は対象の属性がURIPrefixを持ったmapの中に格納されているかどうかを判断します
-func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
+func (n *scopeNavigator) containsURIPrefix() (string, bool) {
 	ok := false
 	uriPrefix := ""
 	if n.op.Path != nil && n.op.Path.AttributePath.URIPrefix != nil {
@@ -84,7 +84,7 @@ func (n *ScopeNavigator) containsURIPrefix() (string, bool) {
 }
 
 // requiredSubAttributes は対象の属性がサブ属性を保持したマップであるかどうかと、サブ属性が対象となったPatchOpeartionかどうかを判断します
-func (n *ScopeNavigator) requiredSubAttributes() (string, bool) {
+func (n *scopeNavigator) requiredSubAttributes() (string, bool) {
 	ok := false
 	subAttr := n.attr.Name()
 	if n.attr.HasSubAttributes() && n.op.Path != nil && n.op.Path.AttributePath.SubAttribute != nil {

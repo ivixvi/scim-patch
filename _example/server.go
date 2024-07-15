@@ -12,7 +12,7 @@ import (
 func newTestServer() scim.Server {
 	userSchema := schema.CoreUserSchema()
 	enterprizeUserSchema := schema.ExtensionEnterpriseUser()
-	patcher := scimpatch.NewPatcher(userSchema, []schema.Schema{enterprizeUserSchema})
+	patcher := scimpatch.NewPatcher(userSchema, []schema.Schema{enterprizeUserSchema}, nil)
 	s, err := scim.NewServer(
 		&scim.ServerArgs{
 			ServiceProviderConfig: &scim.ServiceProviderConfig{},

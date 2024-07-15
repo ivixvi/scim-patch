@@ -2,7 +2,7 @@
 Go implementation of SCIM 2.0 Patch operations.
 
 > [!CAUTION]
-> It has not been fully implemented and is not ready for use.
+> It has not been stable. Not ready for production use.
 
 # Overview
 

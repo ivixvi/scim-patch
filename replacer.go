@@ -4,11 +4,11 @@ import (
 	"github.com/scim2/filter-parser/v2"
 )
 
-type Replacer struct{}
+type replacer struct{}
 
-var replacer *Replacer
+var replacerInstance *replacer
 
-func (r *Replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
+func (r *replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
 		oldSlice, ok := scopedMap[scopedAttr]
@@ -99,7 +99,7 @@ func (r *Replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, v
 	return scopedMap, false
 }
 
-func (r *Replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
+func (r *replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
 	found := false
 	for _, oldValue := range scopedSlice {
@@ -115,7 +115,7 @@ func (r *Replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) 
 	return scopedSlice, changed
 }
 
-func (r *Replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
+func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case map[string]interface{}:
 		changed := false
@@ -139,7 +139,7 @@ func (r *Replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{},
 	}
 }
 
-func (r *Replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
+func (r *replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
