@@ -61,63 +61,11 @@ func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) 
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.2
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
-	var changed = false
 	if op.Path == nil {
 		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
 		return scim.ResourceAttributes{}, false, errors.ScimErrorNoTarget
 	}
-	// Resolve Attribute
-	attrName := op.Path.AttributePath.AttributeName
-	attr, ok := p.containsAttribute(attrName)
-	if !ok {
-		return scim.ResourceAttributes{}, false, errors.ScimErrorInvalidPath
-	}
-	if cannotBePatched(op.Op, attr) {
-		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
-	}
-
-	n := NewScopeNavigator(op, data, attr)
-	switch {
-	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
-		newValues := []map[string]interface{}{}
-		oldValues := n.GetScopedMapSlice()
-		for _, oldValue := range oldValues {
-			if !isMatchExpression(oldValue, op.Path.ValueExpression) {
-				newValues = append(newValues, oldValue)
-			} else {
-				_, ok := oldValue[*op.Path.SubAttribute]
-				if ok {
-					changed = true
-					delete(oldValue, *op.Path.SubAttribute)
-					newValues = append(newValues, oldValue)
-				} else {
-					newValues = append(newValues, oldValue)
-				}
-			}
-		}
-		n.ApplyScopedMapSlice(newValues)
-	case attr.MultiValued() && op.Path.ValueExpression != nil:
-		newValues := []map[string]interface{}{}
-		oldValues := n.GetScopedMapSlice()
-		for _, oldValue := range oldValues {
-			if !isMatchExpression(oldValue, op.Path.ValueExpression) {
-				newValues = append(newValues, oldValue)
-			} else {
-				changed = true
-			}
-		}
-		n.ApplyScopedMapSlice(newValues)
-	case !attr.MultiValued() || op.Path.ValueExpression == nil:
-		scopedMap, scopedAttr := n.GetScopedMap()
-		if _, ok := scopedMap[scopedAttr]; ok {
-			delete(scopedMap, scopedAttr)
-			changed = true
-		}
-		n.ApplyScopedMap(scopedMap)
-		data = n.GetMap()
-	}
-
-	return data, changed, nil
+	return p.pathSpecifiedOperate(op, data, remover)
 }
 
 // containsAttribute は attrName がサーバーで利用されているスキーマの属性名として適切かを確認し、取得します。
@@ -129,4 +77,41 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 		}
 	}
 	return schema.CoreAttribute{}, false
+}
+
+func (p *Patcher) pathSpecifiedOperate(
+	op scim.PatchOperation,
+	data scim.ResourceAttributes,
+	operator Operator,
+) (scim.ResourceAttributes, bool, error) {
+	var changed = false
+	// Resolve Attribute
+	attrName := op.Path.AttributePath.AttributeName
+	attr, ok := p.containsAttribute(attrName)
+	if !ok {
+		return scim.ResourceAttributes{}, false, errors.ScimErrorInvalidPath
+	}
+	if cannotBePatched(op.Op, attr) {
+		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
+	}
+	n := NewScopeNavigator(op, data, attr)
+	switch {
+	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
+		var newValues []map[string]interface{}
+		oldValues := n.GetScopedMapSlice()
+		newValues, changed = operator.ByValueExpressionForAttribute(oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, nil)
+		n.ApplyScopedMapSlice(newValues)
+	case attr.MultiValued() && op.Path.ValueExpression != nil:
+		var newValues []map[string]interface{}
+		oldValues := n.GetScopedMapSlice()
+		newValues, changed = operator.ByValueExpressionForItem(oldValues, op.Path.ValueExpression, nil)
+		n.ApplyScopedMapSlice(newValues)
+	case !attr.MultiValued() || op.Path.ValueExpression == nil:
+		scopedMap, scopedAttr := n.GetScopedMap()
+		scopedMap, changed = operator.Direct(scopedMap, scopedAttr, nil)
+		n.ApplyScopedMap(scopedMap)
+		data = n.GetMap()
+	}
+
+	return data, changed, nil
 }
