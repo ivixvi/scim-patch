@@ -55,26 +55,45 @@ func (r *Additionner) Direct(scopedMap map[string]interface{}, scopedAttr string
 			scopedMap[scopedAttr] = newValue
 			return scopedMap, true
 		}
-		if len(oldSlice) != len(newValue) {
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
 		changed := false
-		for _, newItem := range newValue {
-			found := false
-			for _, oldItem := range oldSlice {
-				if newItem == oldItem {
-					found = true
-					break
+		if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
+			if newMaps, ok := areEveryItemsMap(newValue); ok {
+				for _, newMap := range newMaps {
+					found := false
+					for _, oldMap := range oldMaps {
+						if eqMap(newMap, oldMap) {
+							found = true
+							break
+						}
+					}
+					if !found {
+						oldMaps = append(oldMaps, newMap)
+						changed = true
+					}
+				}
+				if changed {
+					scopedMap[scopedAttr] = oldMaps
+				}
+
+				return scopedMap, changed
+			}
+		} else {
+			for _, newItem := range newValue {
+				found := false
+				for _, oldItem := range oldSlice {
+					if newItem == oldItem {
+						found = true
+						break
+					}
+				}
+				if !found {
+					changed = true
+					oldSlice = append(oldSlice, newItem)
 				}
 			}
-			if !found {
-				changed = true
-				oldSlice = append(oldSlice, newItem)
+			if changed {
+				scopedMap[scopedAttr] = oldSlice
 			}
-		}
-		if changed {
-			scopedMap[scopedAttr] = oldSlice
 		}
 		return scopedMap, changed
 	case interface{}:
@@ -116,6 +135,8 @@ func (r *Additionner) ByValueExpressionForItem(scopedMaps []map[string]interface
 					var merger map[string]interface{}
 					merger, changed = mergeMap(oldValue, newValue)
 					newValues = append(newValues, merger)
+				} else {
+					newValues = append(newValues, oldValue)
 				}
 			}
 		}

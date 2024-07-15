@@ -8,21 +8,10 @@ import (
 	"github.com/elimity-com/scim/errors"
 	"github.com/elimity-com/scim/schema"
 	scimpatch "github.com/ivixvi/scim-patch"
-	filter "github.com/scim2/filter-parser/v2"
 )
 
-// path は *filter.Path を取得しやすくするためのテストユーティリティです。
-// APIのリクエストボディ Operations[].path にはいってくる想定の値を引数に与えて利用します。
-func path(s string) *filter.Path {
-	p, err := filter.ParsePath([]byte(s))
-	if err != nil {
-		fmt.Printf("Failed to parse %s occurred by %s\n", s, err)
-	}
-	return &p
-}
-
-// TestPatcher_Apply は Pacher.Apply の正常系をテストします
-func TestPatcher_Apply(t *testing.T) {
+// TestPatcher_Apply は Pacher.Apply の Remove の正常系をテストします
+func TestPathSpecifiedRemove(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
 		name            string
@@ -31,106 +20,6 @@ func TestPatcher_Apply(t *testing.T) {
 		expected        scim.ResourceAttributes
 		expectedChanged bool
 	}{
-		{
-			name: "Add operation",
-			op: scim.PatchOperation{
-				Op:    "add",
-				Path:  path(`displayName`),
-				Value: "Alice Green",
-			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
-				"displayName": "Alice Green",
-			},
-			expectedChanged: true,
-		},
-		{
-			name: "Add operation - MultiValued Complex Attributes - Filter & Value addition",
-			op: scim.PatchOperation{
-				Op:    "add",
-				Path:  path(`emails[type eq "work"].value`),
-				Value: "ivixvi@example.com",
-			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi@example.com",
-					},
-				},
-			},
-			expectedChanged: true,
-		},
-		// Replace Singular Attribute
-		{
-			name: "Replace operation - Core Singular Attributes",
-			op: scim.PatchOperation{
-				Op:    "replace",
-				Path:  path(`displayName`),
-				Value: "Alice Green",
-			},
-			data: scim.ResourceAttributes{
-				"displayName": "Bob Green",
-			},
-			expected: scim.ResourceAttributes{
-				"displayName": "Alice Green",
-			},
-			expectedChanged: true,
-		},
-		{
-			name: "Replace operation - Core MultiValued Complex Attributes - For Item",
-			op: scim.PatchOperation{
-				Op:   "replace",
-				Path: path(`emails[type eq "work"]`),
-				Value: map[string]interface{}{
-					"type":  "work",
-					"value": "ivixvi-updated@example.com",
-				},
-			},
-			data: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi@example.com",
-					},
-				},
-			},
-			expected: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi-updated@example.com",
-					},
-				},
-			},
-			expectedChanged: true,
-		},
-		{
-			name: "Replace operation - Core MultiValued Complex Attributes - For Attribute",
-			op: scim.PatchOperation{
-				Op:    "replace",
-				Path:  path(`emails[type eq "work"].value`),
-				Value: "ivixvi-updated@example.com",
-			},
-			data: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi@example.com",
-					},
-				},
-			},
-			expected: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi-updated@example.com",
-					},
-				},
-			},
-			expectedChanged: true,
-		},
 		// Remove Singular Attribute
 		{
 			name: "Remove operation - Core Singular Attribute",
@@ -518,8 +407,8 @@ func TestPatcher_Apply(t *testing.T) {
 	}
 }
 
-// TestPatcher_ApplyError は Pacher.Apply の異常系をテストします
-func TestPatcher_ApplyError(t *testing.T) {
+// TestPatcher_ApplyError は Pacher.Apply の Remove の異常系をテストします
+func TestRemoveError(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
 		name     string

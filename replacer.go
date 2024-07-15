@@ -57,17 +57,35 @@ func (r *Replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, v
 			scopedMap[scopedAttr] = newValue
 			return scopedMap, true
 		}
-		for _, newItem := range newValue {
-			found := false
-			for _, oldItem := range oldSlice {
-				if newItem == oldItem {
-					found = true
-					break
+		if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
+			if newMaps, ok := areEveryItemsMap(newValue); ok {
+				for _, newMap := range newMaps {
+					found := false
+					for _, oldMap := range oldMaps {
+						if eqMap(newMap, oldMap) {
+							found = true
+							break
+						}
+					}
+					if !found {
+						scopedMap[scopedAttr] = newValue
+						return scopedMap, true
+					}
 				}
 			}
-			if !found {
-				scopedMap[scopedAttr] = newValue
-				return scopedMap, true
+		} else {
+			for _, newItem := range newValue {
+				found := false
+				for _, oldItem := range oldSlice {
+					if newItem == oldItem {
+						found = true
+						break
+					}
+				}
+				if !found {
+					scopedMap[scopedAttr] = newValue
+					return scopedMap, true
+				}
 			}
 		}
 		return scopedMap, false
@@ -109,6 +127,8 @@ func (r *Replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{},
 				if !eqMap(oldValue, newValue) {
 					changed = true
 					newValues = append(newValues, newValue)
+				} else {
+					newValues = append(newValues, oldValue)
 				}
 			}
 		}
