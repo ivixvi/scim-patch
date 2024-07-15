@@ -1,8 +1,6 @@
 package scimpatch
 
 import (
-	"fmt"
-
 	"github.com/scim2/filter-parser/v2"
 )
 
@@ -13,6 +11,35 @@ var replacer *Replacer
 func (r *Replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
+		oldSlice, ok := scopedMap[scopedAttr]
+		if !ok {
+			scopedMap[scopedAttr] = newValue
+			return scopedMap, true
+		}
+		oldMaps, ok := areEveryItemsMap(oldSlice)
+		if !ok {
+			// WARN: unexpected current value
+			scopedMap[scopedAttr] = newValue
+			return scopedMap, true
+		}
+		if len(oldMaps) != len(newValue) {
+			scopedMap[scopedAttr] = newValue
+			return scopedMap, true
+		}
+		for _, newMap := range newValue {
+			found := false
+			for _, oldMap := range oldMaps {
+				if eqMap(newMap, oldMap) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				scopedMap[scopedAttr] = newValue
+				return scopedMap, true
+			}
+		}
+		return scopedMap, false
 	case map[string]interface{}:
 		oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
 		if ok && eqMap(newValue, oldMap) {
@@ -21,6 +48,29 @@ func (r *Replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, v
 		scopedMap[scopedAttr] = value
 		return scopedMap, true
 	case []interface{}:
+		oldSlice, ok := scopedMap[scopedAttr].([]interface{})
+		if !ok {
+			scopedMap[scopedAttr] = newValue
+			return scopedMap, true
+		}
+		if len(oldSlice) != len(newValue) {
+			scopedMap[scopedAttr] = newValue
+			return scopedMap, true
+		}
+		for _, newItem := range newValue {
+			found := false
+			for _, oldItem := range oldSlice {
+				if newItem == oldItem {
+					found = true
+					break
+				}
+			}
+			if !found {
+				scopedMap[scopedAttr] = newValue
+				return scopedMap, true
+			}
+		}
+		return scopedMap, false
 	case interface{}:
 		if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
 			scopedMap[scopedAttr] = value
@@ -48,21 +98,25 @@ func (r *Replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) 
 }
 
 func (r *Replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
-	changed := false
-	newValues := []map[string]interface{}{}
-	for _, oldValue := range scopedMaps {
-		if !isMatchExpression(oldValue, expr) {
-			newValues = append(newValues, oldValue)
-		} else {
-			newMap, ok := value.(map[string]interface{})
-			fmt.Printf("\nnewMap, ok = %v, %v\n", newMap, ok)
-			if ok && !eqMap(oldValue, newMap) {
-				changed = true
-				newValues = append(newValues, newMap)
+	switch newValue := value.(type) {
+	case map[string]interface{}:
+		changed := false
+		newValues := []map[string]interface{}{}
+		for _, oldValue := range scopedMaps {
+			if !isMatchExpression(oldValue, expr) {
+				newValues = append(newValues, oldValue)
+			} else {
+				if !eqMap(oldValue, newValue) {
+					changed = true
+					newValues = append(newValues, newValue)
+				}
 			}
 		}
+		return newValues, changed
+	default:
+		// unexpected input
+		return scopedMaps, false
 	}
-	return newValues, changed
 }
 
 func (r *Replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
