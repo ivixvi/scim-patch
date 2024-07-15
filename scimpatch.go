@@ -46,7 +46,7 @@ func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (s
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
 	if op.Path == nil {
-		return data, false, nil
+		return p.pathUnspecifiedOperate(op, data, additionner)
 	}
 	return p.pathSpecifiedOperate(op, data, additionner)
 }
@@ -57,7 +57,7 @@ func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (sci
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
 	if op.Path == nil {
-		return data, false, nil
+		return p.pathUnspecifiedOperate(op, data, replacer)
 	}
 	return p.pathSpecifiedOperate(op, data, replacer)
 }
@@ -120,4 +120,50 @@ func (p *Patcher) pathSpecifiedOperate(
 	}
 
 	return data, changed, nil
+}
+
+func (p *Patcher) pathUnspecifiedOperate(
+	op scim.PatchOperation,
+	data scim.ResourceAttributes,
+	operator Operator,
+) (scim.ResourceAttributes, bool, error) {
+	switch newMap := op.Value.(type) {
+	case map[string]interface{}:
+		changed := false
+		for attr, value := range newMap {
+			uriPrefix, ok := p.schemas[attr]
+			if ok {
+				oldMap, ok := data[uriPrefix.ID].(map[string]interface{})
+				if !ok {
+					changed = true
+					data[uriPrefix.ID] = value
+				} else {
+					newUriMap, ok := value.(map[string]interface{})
+					if !ok {
+						// unexpected input
+						continue
+					}
+					for scopedAttr, scopedValue := range newUriMap {
+						scopedMap, changed_ := operator.Direct(oldMap, scopedAttr, scopedValue)
+						if changed_ {
+							changed = changed_ || changed
+							oldMap = scopedMap
+						}
+					}
+					data[uriPrefix.ID] = oldMap
+				}
+			} else {
+				data_, changed_ := operator.Direct(data, attr, value)
+				if changed_ {
+					changed = changed_ || changed
+					data = data_
+				}
+			}
+		}
+		return data, changed, nil
+	default:
+		// unexpected input
+		return data, false, nil
+	}
+
 }
