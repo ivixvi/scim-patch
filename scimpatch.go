@@ -45,7 +45,10 @@ func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (s
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.1
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
-	return data, false, nil
+	if op.Path == nil {
+		return data, false, nil
+	}
+	return p.pathSpecifiedOperate(op, data, additionner)
 }
 
 // replace は RFC7644 3.5.2.3. Replace Operation の実装です。
@@ -53,6 +56,9 @@ func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (sci
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.3
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+	if op.Path == nil {
+		return data, false, nil
+	}
 	return p.pathSpecifiedOperate(op, data, replacer)
 }
 

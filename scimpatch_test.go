@@ -35,15 +35,32 @@ func TestPatcher_Apply(t *testing.T) {
 			name: "Add operation",
 			op: scim.PatchOperation{
 				Op:    "add",
-				Value: map[string]interface{}{"displayName": "Alice Green"},
+				Path:  path(`displayName`),
+				Value: "Alice Green",
 			},
-			data: scim.ResourceAttributes{
-				"displayName": "Bob Green",
-			},
+			data: scim.ResourceAttributes{},
 			expected: scim.ResourceAttributes{
-				"displayName": "Bob Green",
+				"displayName": "Alice Green",
 			},
-			expectedChanged: false,
+			expectedChanged: true,
+		},
+		{
+			name: "Add operation - MultiValued Complex Attributes - Filter & Value addition",
+			op: scim.PatchOperation{
+				Op:    "add",
+				Path:  path(`emails[type eq "work"].value`),
+				Value: "ivixvi@example.com",
+			},
+			data: scim.ResourceAttributes{},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
 		},
 		// Replace Singular Attribute
 		{
