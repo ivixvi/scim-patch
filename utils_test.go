@@ -133,3 +133,83 @@ func TestEqMap(t *testing.T) {
 		})
 	}
 }
+
+// TestMergeMap は mergeMap をテストします
+func TestMergeMap(t *testing.T) {
+	// Define the test cases
+	testCases := []struct {
+		name        string
+		m1          map[string]interface{}
+		m2          map[string]interface{}
+		expectedMap map[string]interface{}
+		expectedOk  bool
+	}{
+		{
+			name:        "empty",
+			m1:          map[string]interface{}{},
+			m2:          map[string]interface{}{},
+			expectedMap: map[string]interface{}{},
+			expectedOk:  false,
+		},
+		{
+			name: "merger contains mergee",
+			m1: map[string]interface{}{
+				"a1": "string",
+			},
+			m2: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			expectedMap: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			expectedOk: true,
+		},
+		{
+			name: "mergee contains merger",
+			m1: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			m2: map[string]interface{}{
+				"a1": "string",
+			},
+			expectedMap: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			expectedOk: false,
+		},
+		{
+			name: "match",
+			m1: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			m2: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			expectedMap: map[string]interface{}{
+				"a1": "string",
+				"a2": "string",
+			},
+			expectedOk: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Log(tc.name)
+			// call AreEveryItemsMap
+			actual, ok := scimpatch.MergeMap(tc.m1, tc.m2)
+
+			// Check if the result matches the expected data
+			if !(tc.expectedOk == ok && fmt.Sprint(tc.expectedMap) == fmt.Sprint(actual)) {
+				t.Fatalf("EqMap() not returned Expected ok: %v, %v", tc.expectedOk, ok)
+				t.Fatalf("EqMap() not returned Expected map: %v, %v", tc.expectedMap, actual)
+			}
+		})
+	}
+}

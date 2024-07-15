@@ -10,3 +10,8 @@ func AreEveryItemsMap(s interface{}) ([]map[string]interface{}, bool) {
 func EqMap(m1 map[string]interface{}, m2 map[string]interface{}) bool {
 	return eqMap(m1, m2)
 }
+
+// MergeMap is export mergeMap for testing
+func MergeMap(m1 map[string]interface{}, m2 map[string]interface{}) (map[string]interface{}, bool) {
+	return mergeMap(m1, m2)
+}

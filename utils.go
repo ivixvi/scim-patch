@@ -41,6 +41,17 @@ func areEveryItemsMap(s interface{}) ([]map[string]interface{}, bool) {
 	}
 }
 
+func mergeMap(mergee map[string]interface{}, merger map[string]interface{}) (map[string]interface{}, bool) {
+	merged := false
+	for mergerKey, mergerValue := range merger {
+		if mergeeValue, ok := mergee[mergerKey]; !ok || mergeeValue != mergerValue {
+			mergee[mergerKey] = mergerValue
+			merged = true
+		}
+	}
+	return mergee, merged
+}
+
 func eqMap(m1 map[string]interface{}, m2 map[string]interface{}) bool {
 	if len(m1) != len(m2) {
 		return false
