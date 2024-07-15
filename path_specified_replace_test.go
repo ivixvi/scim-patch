@@ -21,7 +21,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 	}{
 		// Replace Singular Attribute
 		{
-			name: "Replace operation - Core Singular Attributes",
+			name: "Replace operation - Core Singular Attributes - replace",
 			op: scim.PatchOperation{
 				Op:    "replace",
 				Path:  path(`displayName`),
@@ -36,19 +36,160 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Replace operation - Core MultiValued Complex Attributes - For Item",
+			name: "Replace operation - Core Singular Attributes - no value",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`displayName`),
+				Value: "Alice Green",
+			},
+			data: scim.ResourceAttributes{},
+			expected: scim.ResourceAttributes{
+				"displayName": "Alice Green",
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core Singular Attributes - no changed",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`displayName`),
+				Value: "Alice Green",
+			},
+			data: scim.ResourceAttributes{
+				"displayName": "Alice Green",
+			},
+			expected: scim.ResourceAttributes{
+				"displayName": "Alice Green",
+			},
+			expectedChanged: false,
+		},
+		// Replace Complex Attribute
+		{
+			name: "Replace operation - Core Singular Attributes - replace",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`name.familyName`),
+				Value: "Green",
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Blue",
+					"givenName":  "Alice",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core Singular Attributes - no value",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`name.familyName`),
+				Value: "Green",
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"givenName": "Alice",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core Singular Attributes - no changed.",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`name.familyName`),
+				Value: "Green",
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: false,
+		},
+		{
+			name: "Replace operation - Core Singular Attributes - map specified replace",
 			op: scim.PatchOperation{
 				Op:   "replace",
-				Path: path(`emails[type eq "work"]`),
+				Path: path(`name`),
 				Value: map[string]interface{}{
-					"type":  "work",
-					"value": "ivixvi-updated@example.com",
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"givenName": "Bob",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core Singular Attributes - map specified no changed",
+			op: scim.PatchOperation{
+				Op:   "replace",
+				Path: path(`name`),
+				Value: map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			data: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: false,
+		},
+		// MultiValued Complex Attribute
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace All",
+			op: scim.PatchOperation{
+				Op:   "replace",
+				Path: path(`emails`),
+				Value: []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi-updated@example.com",
+					},
 				},
 			},
 			data: scim.ResourceAttributes{
 				"emails": []interface{}{
 					map[string]interface{}{
-						"type":  "work",
+						"type":  "home",
 						"value": "ivixvi@example.com",
 					},
 				},
@@ -64,7 +205,94 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Replace operation - Core MultiValued Complex Attributes - For Attribute",
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace All no changed",
+			op: scim.PatchOperation{
+				Op:   "replace",
+				Path: path(`emails`),
+				Value: []interface{}{
+					map[string]interface{}{
+						"type":  "home",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "home",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "home",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expectedChanged: false,
+		},
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace For Item",
+			op: scim.PatchOperation{
+				Op:   "replace",
+				Path: path(`emails[type eq "work"]`),
+				Value: map[string]interface{}{
+					"type":  "work",
+					"value": "ivixvi-updated@example.com",
+				},
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":    "work",
+						"value":   "ivixvi@example.com",
+						"primary": true,
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi-updated@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace For Item no changed",
+			op: scim.PatchOperation{
+				Op:   "replace",
+				Path: path(`emails[type eq "work"]`),
+				Value: map[string]interface{}{
+					"type":  "work",
+					"value": "ivixvi@example.com",
+				},
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expectedChanged: false,
+		},
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace For Attribute",
 			op: scim.PatchOperation{
 				Op:    "replace",
 				Path:  path(`emails[type eq "work"].value`),
@@ -87,6 +315,31 @@ func TestPathSpecifiedReplace(t *testing.T) {
 				},
 			},
 			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace For Attribute no changed",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`emails[type eq "work"].value`),
+				Value: "ivixvi@example.com",
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expectedChanged: false,
 		},
 	}
 
