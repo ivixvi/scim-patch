@@ -19,3 +19,17 @@ func isMatchExpression(value map[string]interface{}, expr filter.Expression) boo
 	}
 	return false
 }
+
+// toMap は、 expr を解釈して map を作成します
+func toMap(expr filter.Expression) map[string]interface{} {
+	switch typedExpr := expr.(type) {
+	case *filter.AttributeExpression:
+		switch typedExpr.Operator {
+		case "eq":
+			return map[string]interface{}{
+				typedExpr.AttributePath.AttributeName: typedExpr.CompareValue,
+			}
+		}
+	}
+	return map[string]interface{}{}
+}
