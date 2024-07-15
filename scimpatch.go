@@ -53,7 +53,7 @@ func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (sci
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.3
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
-	return data, false, nil
+	return p.pathSpecifiedOperate(op, data, replacer)
 }
 
 // remove は RFC7644 3.5.2.2. Remove Operation の実装です。
@@ -99,16 +99,16 @@ func (p *Patcher) pathSpecifiedOperate(
 	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
-		newValues, changed = operator.ByValueExpressionForAttribute(oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, nil)
+		newValues, changed = operator.ByValueExpressionForAttribute(oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, op.Value)
 		n.ApplyScopedMapSlice(newValues)
 	case attr.MultiValued() && op.Path.ValueExpression != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
-		newValues, changed = operator.ByValueExpressionForItem(oldValues, op.Path.ValueExpression, nil)
+		newValues, changed = operator.ByValueExpressionForItem(oldValues, op.Path.ValueExpression, op.Value)
 		n.ApplyScopedMapSlice(newValues)
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
-		scopedMap, changed = operator.Direct(scopedMap, scopedAttr, nil)
+		scopedMap, changed = operator.Direct(scopedMap, scopedAttr, op.Value)
 		n.ApplyScopedMap(scopedMap)
 		data = n.GetMap()
 	}

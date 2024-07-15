@@ -14,7 +14,7 @@ func (r *Remover) Direct(scopedMap map[string]interface{}, scopedAttr string, va
 	return scopedMap, false
 }
 
-func (r *Remover) ByValueForItem(scopedSlice []interface{}, expr filter.Expression, value interface{}) ([]interface{}, bool) {
+func (r *Remover) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
 	newValues := []interface{}{}
 	for _, oldValue := range scopedSlice {
@@ -27,7 +27,7 @@ func (r *Remover) ByValueForItem(scopedSlice []interface{}, expr filter.Expressi
 	return newValues, changed
 }
 
-func (r *Remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, values []interface{}) ([]map[string]interface{}, bool) {
+func (r *Remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
@@ -40,7 +40,7 @@ func (r *Remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, 
 	return newValues, changed
 }
 
-func (r *Remover) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, values []interface{}) ([]map[string]interface{}, bool) {
+func (r *Remover) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {

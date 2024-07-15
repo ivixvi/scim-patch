@@ -45,19 +45,74 @@ func TestPatcher_Apply(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Replace Singular Attribute
 		{
-			name: "Replace operation",
+			name: "Replace operation - Core Singular Attributes",
 			op: scim.PatchOperation{
 				Op:    "replace",
-				Value: map[string]interface{}{"displayName": "Alice Green"},
+				Path:  path(`displayName`),
+				Value: "Alice Green",
 			},
 			data: scim.ResourceAttributes{
 				"displayName": "Bob Green",
 			},
 			expected: scim.ResourceAttributes{
-				"displayName": "Bob Green",
+				"displayName": "Alice Green",
 			},
-			expectedChanged: false,
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - For Item",
+			op: scim.PatchOperation{
+				Op:   "replace",
+				Path: path(`emails[type eq "work"]`),
+				Value: map[string]interface{}{
+					"type":  "work",
+					"value": "ivixvi-updated@example.com",
+				},
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi-updated@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core MultiValued Complex Attributes - For Attribute",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`emails[type eq "work"].value`),
+				Value: "ivixvi-updated@example.com",
+			},
+			data: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi@example.com",
+					},
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi-updated@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
 		},
 		// Remove Singular Attribute
 		{
