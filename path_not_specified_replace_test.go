@@ -9,8 +9,8 @@ import (
 	scimpatch "github.com/ivixvi/scim-patch"
 )
 
-// TestPathNotspecifiedAdd は Pacher.Apply の path指定をしていない add 操作の正常系をテストします
-func TestPathNotspecifiedAdd(t *testing.T) {
+// TestPathNotspecifiedReplace は Pacher.Apply の path指定をしていない replace 操作の正常系をテストします
+func TestPathNotspecifiedReplace(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
 		name            string
@@ -21,9 +21,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 	}{
 		// Singular Attribute
 		{
-			name: "Add operation - Core Singular Attributes - add",
+			name: "Replace operation - Core Singular Attributes - add",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"displayName": "Alice Green",
 				},
@@ -35,9 +35,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Core Singular Attributes - replace",
+			name: "Replace operation - Core Singular Attributes - replace",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"displayName": "Alice Green",
 				},
@@ -51,9 +51,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Core Singular Attributes - no changed",
+			name: "Replace operation - Core Singular Attributes - no changed",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"displayName": "Alice Green",
 				},
@@ -68,9 +68,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 		},
 		// Complex Attribute
 		{
-			name: "Add operation - Core Complex Attributes - replace",
+			name: "Replace operation - Core Complex Attributes - replace",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"name": map[string]interface{}{
 						"familyName": "Green",
@@ -86,38 +86,14 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expected: scim.ResourceAttributes{
 				"name": map[string]interface{}{
 					"familyName": "Green",
-					"givenName":  "Alice",
 				},
 			},
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Core Complex Attributes - no value",
+			name: "Replace operation - Core Complex Attributes - no changed.",
 			op: scim.PatchOperation{
-				Op: "add",
-				Value: map[string]interface{}{
-					"name": map[string]interface{}{
-						"familyName": "Green",
-					},
-				},
-			},
-			data: scim.ResourceAttributes{
-				"name": map[string]interface{}{
-					"givenName": "Alice",
-				},
-			},
-			expected: scim.ResourceAttributes{
-				"name": map[string]interface{}{
-					"familyName": "Green",
-					"givenName":  "Alice",
-				},
-			},
-			expectedChanged: true,
-		},
-		{
-			name: "Add operation - Core Complex Attributes - no changed.",
-			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"name": map[string]interface{}{
 						"familyName": "Green",
@@ -127,21 +103,19 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			data: scim.ResourceAttributes{
 				"name": map[string]interface{}{
 					"familyName": "Green",
-					"givenName":  "Alice",
 				},
 			},
 			expected: scim.ResourceAttributes{
 				"name": map[string]interface{}{
 					"familyName": "Green",
-					"givenName":  "Alice",
 				},
 			},
 			expectedChanged: false,
 		},
 		{
-			name: "Add operation - Core Complex Attributes - map specified merge",
+			name: "Replace operation - Core Complex Attributes - map specified replace",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"name": map[string]interface{}{
 						"givenName": "Alice",
@@ -157,17 +131,16 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			},
 			expected: scim.ResourceAttributes{
 				"name": map[string]interface{}{
-					"familyName": "Green",
-					"givenName":  "Alice",
-					"formatted":  "Alice Green",
+					"givenName": "Alice",
+					"formatted": "Alice Green",
 				},
 			},
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Core Singular Attributes - map specified no changed",
+			name: "Replace operation - Core Singular Attributes - map specified no changed",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"name": map[string]interface{}{
 						"familyName": "Green",
@@ -191,9 +164,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 		},
 		// MultiValued Complex Attribute
 		{
-			name: "Add operation - Core MultiValued Complex Attributes - Add All",
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace All",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"emails": []interface{}{
 						map[string]interface{}{
@@ -213,10 +186,6 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			},
 			expected: scim.ResourceAttributes{
 				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "home",
-						"value": "ivixvi@example.com",
-					},
 					map[string]interface{}{
 						"type":  "work",
 						"value": "ivixvi-added@example.com",
@@ -226,48 +195,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Core MultiValued Complex Attributes - Add All no changed",
+			name: "Replace operation - Core MultiValued Complex Attributes - Replace For Attribute no changed",
 			op: scim.PatchOperation{
-				Op: "add",
-				Value: map[string]interface{}{
-					"emails": []interface{}{
-						map[string]interface{}{
-							"type":  "work",
-							"value": "ivixvi-added@example.com",
-						},
-					},
-				},
-			},
-			data: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "home",
-						"value": "ivixvi@example.com",
-					},
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi-added@example.com",
-					},
-				},
-			},
-			expected: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "home",
-						"value": "ivixvi@example.com",
-					},
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi-added@example.com",
-					},
-				},
-			},
-			expectedChanged: false,
-		},
-		{
-			name: "Add operation - Core MultiValued Complex Attributes - Add For Item no changed",
-			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"emails": []interface{}{
 						map[string]interface{}{
@@ -296,40 +226,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: false,
 		},
 		{
-			name: "Add operation - Core MultiValued Complex Attributes - Replace For Attribute no changed",
+			name: "Replace operation - MultiValued Complex Attributes - Filter & Value addition",
 			op: scim.PatchOperation{
-				Op: "add",
-				Value: map[string]interface{}{
-					"emails": []interface{}{
-						map[string]interface{}{
-							"type":  "work",
-							"value": "ivixvi@example.com",
-						},
-					},
-				},
-			},
-			data: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi@example.com",
-					},
-				},
-			},
-			expected: scim.ResourceAttributes{
-				"emails": []interface{}{
-					map[string]interface{}{
-						"type":  "work",
-						"value": "ivixvi@example.com",
-					},
-				},
-			},
-			expectedChanged: false,
-		},
-		{
-			name: "Add operation - MultiValued Complex Attributes - Filter & Value addition",
-			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"emails": []interface{}{
 						map[string]interface{}{
@@ -351,9 +250,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attribute - URI Prefix not exists.",
+			name: "Replace operation - Extention Singular Attribute - URI Prefix not exists.",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 						"department": "department1",
@@ -369,9 +268,9 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attribute - URI Prefix exists.",
+			name: "Replace operation - Extention Singular Attribute - URI Prefix exists.",
 			op: scim.PatchOperation{
-				Op: "add",
+				Op: "replace",
 				Value: map[string]interface{}{
 					"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 						"department": "updated-department",
