@@ -29,6 +29,8 @@ func (n *scopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
 	uriScoped := n.GetURIScopedMap()
 	if _, required := n.requiredSubAttributes(); required {
 		uriScoped = attatchToMap(uriScoped, scopedMap, n.attr.Name(), required)
+	} else {
+		uriScoped = scopedMap
 	}
 
 	data := n.data
