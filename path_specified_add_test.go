@@ -63,6 +63,83 @@ func TestPathSpecifiedAdd(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Extention Singular Attribute
+		{
+			name: "Add operation - Extention Singular Attributes - add",
+			op: scim.PatchOperation{
+				Op:    "add",
+				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
+				Value: "Sales",
+			},
+			data: scim.ResourceAttributes{},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"department": "Sales",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Add operation - Extention Singular Attributes - add",
+			op: scim.PatchOperation{
+				Op:    "add",
+				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
+				Value: "2B Sales",
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"department": "2B Sales",
+					"division":   "Sales",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Add operation - Extention Singular Attributes - replace",
+			op: scim.PatchOperation{
+				Op:    "add",
+				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
+				Value: "2B Sales",
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"department": "2C Sales",
+					"division":   "Sales",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"department": "2B Sales",
+					"division":   "Sales",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Add operation - Extention Singular Attributes - no changed",
+			op: scim.PatchOperation{
+				Op:    "add",
+				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
+				Value: "2B Sales",
+			},
+			data: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"division": "Sales",
+				},
+			},
+			expected: scim.ResourceAttributes{
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
+					"department": "2B Sales",
+					"division":   "Sales",
+				},
+			},
+			expectedChanged: true,
+		},
 		// Complex Attribute
 		{
 			name: "Add operation - Core Complex Attributes - replace",
