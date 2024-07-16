@@ -58,7 +58,7 @@ func NewPatcher(
 // Apply は RFC7644 3.5.2.  Modifying with PATCH の実装です。
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2
-func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+func (p *Patcher) Apply(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	switch strings.ToLower(op.Op) {
 	case scim.PatchOperationAdd:
 		return p.add(op, data)
@@ -74,7 +74,7 @@ func (p *Patcher) Apply(op scim.PatchOperation, data scim.ResourceAttributes) (s
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.1
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+func (p *Patcher) add(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
 		return p.pathUnspecifiedOperate(op, data, p.additionnar)
 	}
@@ -85,7 +85,7 @@ func (p *Patcher) add(op scim.PatchOperation, data scim.ResourceAttributes) (sci
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.3
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+func (p *Patcher) replace(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
 		return p.pathUnspecifiedOperate(op, data, p.replacer)
 	}
@@ -96,10 +96,10 @@ func (p *Patcher) replace(op scim.PatchOperation, data scim.ResourceAttributes) 
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.2
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) remove(op scim.PatchOperation, data scim.ResourceAttributes) (scim.ResourceAttributes, bool, error) {
+func (p *Patcher) remove(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
 		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
-		return scim.ResourceAttributes{}, false, errors.ScimErrorNoTarget
+		return map[string]interface{}{}, false, errors.ScimErrorNoTarget
 	}
 	return p.pathSpecifiedOperate(op, data, p.remover)
 }
@@ -117,18 +117,18 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 
 func (p *Patcher) pathSpecifiedOperate(
 	op scim.PatchOperation,
-	data scim.ResourceAttributes,
+	data map[string]interface{},
 	operator Operator,
-) (scim.ResourceAttributes, bool, error) {
+) (map[string]interface{}, bool, error) {
 	var changed = false
 	// Resolve Attribute
 	attrName := op.Path.AttributePath.AttributeName
 	attr, ok := p.containsAttribute(attrName)
 	if !ok {
-		return scim.ResourceAttributes{}, false, errors.ScimErrorInvalidPath
+		return map[string]interface{}{}, false, errors.ScimErrorInvalidPath
 	}
 	if cannotBePatched(op.Op, attr) {
-		return scim.ResourceAttributes{}, false, errors.ScimErrorMutability
+		return map[string]interface{}{}, false, errors.ScimErrorMutability
 	}
 	n := newScopeNavigator(op, data, attr)
 	switch {
@@ -154,9 +154,9 @@ func (p *Patcher) pathSpecifiedOperate(
 
 func (p *Patcher) pathUnspecifiedOperate(
 	op scim.PatchOperation,
-	data scim.ResourceAttributes,
+	data map[string]interface{},
 	operator Operator,
-) (scim.ResourceAttributes, bool, error) {
+) (map[string]interface{}, bool, error) {
 	switch newMap := op.Value.(type) {
 	case map[string]interface{}:
 		changed := false

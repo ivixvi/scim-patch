@@ -15,8 +15,8 @@ func TestPathSpecifiedAdd(t *testing.T) {
 	testCases := []struct {
 		name            string
 		op              scim.PatchOperation
-		data            scim.ResourceAttributes
-		expected        scim.ResourceAttributes
+		data            map[string]interface{}
+		expected        map[string]interface{}
 		expectedChanged bool
 	}{
 		// Singular Attribute
@@ -27,8 +27,8 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`displayName`),
 				Value: "Alice Green",
 			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
 			expectedChanged: true,
@@ -40,10 +40,10 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`displayName`),
 				Value: "Alice Green",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"displayName": "Bob Green",
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
 			expectedChanged: true,
@@ -55,10 +55,10 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`displayName`),
 				Value: "Alice Green",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
 			expectedChanged: false,
@@ -71,8 +71,8 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
 				Value: "Sales",
 			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "Sales",
 				},
@@ -86,12 +86,12 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
 				Value: "2B Sales",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "2B Sales",
 					"division":   "Sales",
@@ -106,13 +106,13 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
 				Value: "2B Sales",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "2C Sales",
 					"division":   "Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "2B Sales",
 					"division":   "Sales",
@@ -127,12 +127,12 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
 				Value: "2B Sales",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "2B Sales",
 					"division":   "Sales",
@@ -148,13 +148,13 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`name.familyName`),
 				Value: "Green",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Blue",
 					"givenName":  "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
@@ -169,12 +169,12 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`name.familyName`),
 				Value: "Green",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"givenName": "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
@@ -189,13 +189,13 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`name.familyName`),
 				Value: "Green",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
@@ -213,13 +213,13 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					"formatted": "Alice Green",
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"formatted":  "Bob Green",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
@@ -238,13 +238,13 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					"givenName":  "Alice",
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
@@ -265,7 +265,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "home",
@@ -273,7 +273,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "home",
@@ -299,7 +299,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "home",
@@ -311,7 +311,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "home",
@@ -336,7 +336,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					"primary": true,
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -344,7 +344,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":    "work",
@@ -365,7 +365,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					"value": "ivixvi@example.com",
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -373,7 +373,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -390,7 +390,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`emails[type eq "work"].value`),
 				Value: "ivixvi-updated@example.com",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -398,7 +398,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -415,7 +415,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`emails[type eq "work"].value`),
 				Value: "ivixvi@example.com",
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -423,7 +423,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -440,8 +440,8 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				Path:  path(`emails[type eq "work"].value`),
 				Value: "ivixvi@example.com",
 			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",

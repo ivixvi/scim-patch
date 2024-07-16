@@ -7,11 +7,11 @@ import (
 
 type scopeNavigator struct {
 	op   scim.PatchOperation
-	data scim.ResourceAttributes
+	data map[string]interface{}
 	attr schema.CoreAttribute
 }
 
-func newScopeNavigator(op scim.PatchOperation, data scim.ResourceAttributes, attr schema.CoreAttribute) *scopeNavigator {
+func newScopeNavigator(op scim.PatchOperation, data map[string]interface{}, attr schema.CoreAttribute) *scopeNavigator {
 	return &scopeNavigator{
 		op:   op,
 		data: data,
@@ -20,12 +20,12 @@ func newScopeNavigator(op scim.PatchOperation, data scim.ResourceAttributes, att
 }
 
 // GetMap は 処理対象であるmapまでのスコープをたどり該当のmapを返却します
-func (n *scopeNavigator) GetMap() scim.ResourceAttributes {
+func (n *scopeNavigator) GetMap() map[string]interface{} {
 	return n.data
 }
 
 // ApplyScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換します
-func (n *scopeNavigator) ApplyScopedMap(scopedMap scim.ResourceAttributes) {
+func (n *scopeNavigator) ApplyScopedMap(scopedMap map[string]interface{}) {
 	uriScoped := n.GetURIScopedMap()
 	if _, required := n.requiredSubAttributes(); required {
 		uriScoped = attatchToMap(uriScoped, scopedMap, n.attr.Name(), required)
@@ -58,7 +58,7 @@ func (n *scopeNavigator) GetURIScopedMap() map[string]interface{} {
 }
 
 // GetScopedMap は 属性に応じて、処理対象のMapを返却します
-func (n *scopeNavigator) GetScopedMap() (scim.ResourceAttributes, string) {
+func (n *scopeNavigator) GetScopedMap() (map[string]interface{}, string) {
 	// initialize returns
 	data := n.GetURIScopedMap()
 	subAttrName, ok := n.requiredSubAttributes()
@@ -97,21 +97,21 @@ func (n *scopeNavigator) requiredSubAttributes() (string, bool) {
 }
 
 // navigateToMap は必要に応じて、パスをたどる処理です
-func navigateToMap(data map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
+func navigateToMap(data map[string]interface{}, attr string, ok bool) map[string]interface{} {
 	if ok {
 		data_, ok := data[attr].(map[string]interface{})
 		switch ok {
 		case true:
 			data = data_
 		case false:
-			data = scim.ResourceAttributes{}
+			data = map[string]interface{}{}
 		}
 	}
 	return data
 }
 
 // attatchToMap は必要に応じて、パスを戻す処理です
-func attatchToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
+func attatchToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) map[string]interface{} {
 	if ok {
 		if len(scoped) == 0 {
 			delete(data, attr)
@@ -146,7 +146,7 @@ func navigateToMapSlice(data map[string]interface{}, attr string, ok bool) []map
 }
 
 // attatchToMapSlice は必要に応じて、パスを戻す処理です
-func attatchToMapSlice(data map[string]interface{}, scoped []map[string]interface{}, attr string, ok bool) scim.ResourceAttributes {
+func attatchToMapSlice(data map[string]interface{}, scoped []map[string]interface{}, attr string, ok bool) map[string]interface{} {
 	if ok {
 		if len(scoped) == 0 {
 			delete(data, attr)

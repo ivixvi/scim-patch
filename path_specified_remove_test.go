@@ -16,8 +16,8 @@ func TestPathSpecifiedRemove(t *testing.T) {
 	testCases := []struct {
 		name            string
 		op              scim.PatchOperation
-		data            scim.ResourceAttributes
-		expected        scim.ResourceAttributes
+		data            map[string]interface{}
+		expected        map[string]interface{}
 		expectedChanged bool
 	}{
 		// Remove Singular Attribute
@@ -27,10 +27,10 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("displayName"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"displayName": "Bob Green",
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -39,8 +39,8 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("displayName"),
 			},
-			data:            scim.ResourceAttributes{},
-			expected:        scim.ResourceAttributes{},
+			data:            map[string]interface{}{},
+			expected:        map[string]interface{}{},
 			expectedChanged: false,
 		},
 		{
@@ -49,12 +49,12 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "2B Sales",
 				},
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -63,13 +63,13 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division":   "Sales",
 					"department": "2B Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
@@ -82,8 +82,8 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
 			},
-			data:            scim.ResourceAttributes{},
-			expected:        scim.ResourceAttributes{},
+			data:            map[string]interface{}{},
+			expected:        map[string]interface{}{},
 			expectedChanged: false,
 		},
 		{
@@ -92,12 +92,12 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
@@ -111,12 +111,12 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("name"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 				},
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -125,13 +125,13 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("name.familyName"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"givenName": "Alice",
 				},
@@ -144,12 +144,12 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("name.familyName"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 				},
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -158,8 +158,8 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("name"),
 			},
-			data:            scim.ResourceAttributes{},
-			expected:        scim.ResourceAttributes{},
+			data:            map[string]interface{}{},
+			expected:        map[string]interface{}{},
 			expectedChanged: false,
 		},
 		{
@@ -168,8 +168,8 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("name.familyName"),
 			},
-			data:            scim.ResourceAttributes{},
-			expected:        scim.ResourceAttributes{},
+			data:            map[string]interface{}{},
+			expected:        map[string]interface{}{},
 			expectedChanged: false,
 		},
 		{
@@ -178,7 +178,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"manager": interface{}(
 						map[string]interface{}{
@@ -188,7 +188,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					),
 				},
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -197,7 +197,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"manager": interface{}(
 						map[string]interface{}{
@@ -206,7 +206,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					),
 				},
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -215,7 +215,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"manager": interface{}(
 						map[string]interface{}{
@@ -225,7 +225,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					),
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"manager": interface{}(
 						map[string]interface{}{
@@ -242,8 +242,8 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
 			},
-			data:            scim.ResourceAttributes{},
-			expected:        scim.ResourceAttributes{},
+			data:            map[string]interface{}{},
+			expected:        map[string]interface{}{},
 			expectedChanged: false,
 		},
 		{
@@ -252,12 +252,12 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"division": "Sales",
 				},
@@ -270,7 +270,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path("emails"),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi@example.com",
@@ -278,7 +278,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					},
 				},
 			},
-			expected:        scim.ResourceAttributes{},
+			expected:        map[string]interface{}{},
 			expectedChanged: true,
 		},
 		{
@@ -287,7 +287,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path(`emails[type eq "home"]`),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi@example.com",
@@ -299,7 +299,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi-work@example.com",
@@ -315,7 +315,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path(`emails[type eq "home"].primary`),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value":   "ivixvi@example.com",
@@ -324,7 +324,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi@example.com",
@@ -340,7 +340,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path(`emails[type eq "home"]`),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi-work@example.com",
@@ -348,7 +348,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi-work@example.com",
@@ -364,7 +364,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				Op:   "remove",
 				Path: path(`emails[type eq "home"].primary`),
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi@example.com",
@@ -372,7 +372,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"value": "ivixvi@example.com",
@@ -431,7 +431,7 @@ func TestRemoveError(t *testing.T) {
 			patcher := scimpatch.Patcher{}
 
 			// Apply the PatchOperation
-			_, _, err := patcher.Apply(tc.op, scim.ResourceAttributes{})
+			_, _, err := patcher.Apply(tc.op, map[string]interface{}{})
 			if err == nil {
 				t.Fatalf("Apply() not returned error")
 			}
