@@ -15,8 +15,8 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 	testCases := []struct {
 		name            string
 		op              scim.PatchOperation
-		data            scim.ResourceAttributes
-		expected        scim.ResourceAttributes
+		data            map[string]interface{}
+		expected        map[string]interface{}
 		expectedChanged bool
 	}{
 		// Singular Attribute
@@ -28,8 +28,8 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					"displayName": "Alice Green",
 				},
 			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
 			expectedChanged: true,
@@ -42,10 +42,10 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					"displayName": "Alice Green",
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"displayName": "Bob Green",
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
 			expectedChanged: true,
@@ -58,10 +58,10 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					"displayName": "Alice Green",
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"displayName": "Alice Green",
 			},
 			expectedChanged: false,
@@ -77,13 +77,13 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Blue",
 					"givenName":  "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 				},
@@ -100,12 +100,12 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 				},
@@ -123,13 +123,13 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"formatted":  "Bob Green",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"givenName": "Alice",
 					"formatted": "Alice Green",
@@ -148,13 +148,13 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"name": map[string]interface{}{
 					"familyName": "Green",
 					"givenName":  "Alice",
@@ -176,7 +176,7 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "home",
@@ -184,7 +184,7 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -207,7 +207,7 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -215,7 +215,7 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -238,8 +238,8 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
 				"emails": []interface{}{
 					map[string]interface{}{
 						"type":  "work",
@@ -259,8 +259,8 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{},
-			expected: scim.ResourceAttributes{
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "department1",
 				},
@@ -277,12 +277,12 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 					},
 				},
 			},
-			data: scim.ResourceAttributes{
+			data: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "department",
 				},
 			},
-			expected: scim.ResourceAttributes{
+			expected: map[string]interface{}{
 				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": map[string]interface{}{
 					"department": "updated-department",
 				},
