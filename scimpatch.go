@@ -5,6 +5,7 @@ import (
 
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/errors"
+	"github.com/elimity-com/scim/optional"
 	"github.com/elimity-com/scim/schema"
 )
 
@@ -23,6 +24,11 @@ type PatcherOpts struct {
 	Replacer    *Operator
 	Remover     *Operator
 }
+
+var externalIdAttr = schema.SimpleCoreAttribute(schema.SimpleStringParams(schema.StringParams{
+	Description: optional.NewString("A String that is an identifier for the resource as defined by the provisioning client."),
+	Name:        "externalId",
+}))
 
 // NewPatcher は Patcher の実態を取得します。
 func NewPatcher(
@@ -111,6 +117,9 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 		if ok {
 			return attr, ok
 		}
+	}
+	if attrName == externalIdAttr.Name() {
+		return externalIdAttr, true
 	}
 	return schema.CoreAttribute{}, false
 }
