@@ -19,6 +19,22 @@ func TestPathSpecifiedReplace(t *testing.T) {
 		expected        map[string]interface{}
 		expectedChanged bool
 	}{
+		// Common Attribute
+		{
+			name: "Replace operation - common Attributes - externalId",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path(`externalId`),
+				Value: "galice",
+			},
+			data: map[string]interface{}{
+				"externalId": "gbob",
+			},
+			expected: map[string]interface{}{
+				"externalId": "galice",
+			},
+			expectedChanged: true,
+		},
 		// Singular Attribute
 		{
 			name: "Replace operation - Core Singular Attributes - replace",
