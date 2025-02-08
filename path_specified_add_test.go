@@ -1,6 +1,7 @@
 package scimpatch_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -579,7 +580,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 				}, nil)
 
 			// Apply the PatchOperation
-			result, changed, err := patcher.Apply(tc.op, tc.data)
+			result, changed, err := patcher.Apply(context.TODO(), tc.op, tc.data)
 			if err != nil {
 				t.Fatalf("Apply() returned an unexpected error: %v", err)
 			}
