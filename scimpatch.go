@@ -12,7 +12,7 @@ import (
 type Patcher struct {
 	schema      schema.Schema
 	schemas     map[string]schema.Schema
-	additionnar Operator
+	adder Operator
 	replacer    Operator
 	remover     Operator
 }
@@ -20,7 +20,7 @@ type Patcher struct {
 // PatcherOpts を利用することで Pathcerが利用する各操作の Operator を上書きすることができます。
 // 指定しない場合はパッケージデフォルトで実装されている Operator が利用されます。
 type PatcherOpts struct {
-	Additionnar *Operator
+	Adder *Operator
 	Replacer    *Operator
 	Remover     *Operator
 }
@@ -43,13 +43,13 @@ func NewPatcher(
 	patcher := &Patcher{
 		schema:      s,
 		schemas:     schemas,
-		additionnar: additionnerInstance,
+		adder: adderInstance,
 		replacer:    replacerInstance,
 		remover:     removerInstance,
 	}
 	if opts != nil {
-		if opts.Additionnar != nil {
-			patcher.additionnar = *opts.Additionnar
+		if opts.Adder != nil {
+			patcher.adder = *opts.Adder
 		}
 		if opts.Replacer != nil {
 			patcher.replacer = *opts.Replacer
@@ -82,9 +82,9 @@ func (p *Patcher) Apply(op scim.PatchOperation, data map[string]interface{}) (ma
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
 func (p *Patcher) add(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
-		return p.pathUnspecifiedOperate(op, data, p.additionnar)
+		return p.pathUnspecifiedOperate(op, data, p.adder)
 	}
-	return p.pathSpecifiedOperate(op, data, p.additionnar)
+	return p.pathSpecifiedOperate(op, data, p.adder)
 }
 
 // replace は RFC7644 3.5.2.3. Replace Operation の実装です。

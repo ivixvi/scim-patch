@@ -4,11 +4,11 @@ import (
 	"github.com/scim2/filter-parser/v2"
 )
 
-type additionner struct{}
+type adder struct{}
 
-var additionnerInstance *additionner
+var adderInstance *adder
 
-func (r *additionner) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
+func (r *adder) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
 		oldSlice, ok := scopedMap[scopedAttr]
@@ -106,7 +106,7 @@ func (r *additionner) Direct(scopedMap map[string]interface{}, scopedAttr string
 	return scopedMap, false
 }
 
-func (r *additionner) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
+func (r *adder) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
 	found := false
 	for _, oldValue := range scopedSlice {
@@ -122,7 +122,7 @@ func (r *additionner) ByValueForItem(scopedSlice []interface{}, value interface{
 	return scopedSlice, changed
 }
 
-func (r *additionner) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
+func (r *adder) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case map[string]interface{}:
 		changed := false
@@ -147,7 +147,7 @@ func (r *additionner) ByValueExpressionForItem(scopedMaps []map[string]interface
 	}
 }
 
-func (r *additionner) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
+func (r *adder) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	found := false
