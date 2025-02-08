@@ -44,7 +44,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: false,
 		},
 		{
-			name: "Remove operation - Extention Singular Attribute - All Removed.",
+			name: "Remove operation - Extension Singular Attribute - All Removed.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
@@ -58,7 +58,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Remove operation - Extention Singular Attribute - Partially Removed.",
+			name: "Remove operation - Extension Singular Attribute - Partially Removed.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
@@ -77,7 +77,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Remove operation - Extention Singular Attribute - URI Prefix not exists.",
+			name: "Remove operation - Extension Singular Attribute - URI Prefix not exists.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
@@ -87,7 +87,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: false,
 		},
 		{
-			name: "Remove operation - Extention Singular Attribute - URI Prefix exists.",
+			name: "Remove operation - Extension Singular Attribute - URI Prefix exists.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department"),
@@ -173,7 +173,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: false,
 		},
 		{
-			name: "Remove operation - Extention Complex Attribute - Attribute Removed.",
+			name: "Remove operation - Extension Complex Attribute - Attribute Removed.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager"),
@@ -192,7 +192,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Remove operation - Extention Complex Attribute - All Removed.",
+			name: "Remove operation - Extension Complex Attribute - All Removed.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
@@ -210,7 +210,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Remove operation - Extention Complex Attribute - Partially Removed.",
+			name: "Remove operation - Extension Complex Attribute - Partially Removed.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
@@ -237,7 +237,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Remove operation - Extention Complex Attribute - URI Prefix not exists.",
+			name: "Remove operation - Extension Complex Attribute - URI Prefix not exists.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),
@@ -247,7 +247,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			expectedChanged: false,
 		},
 		{
-			name: "Remove operation - Extention Complex Attribute - URI Prefix exists.",
+			name: "Remove operation - Extension Complex Attribute - URI Prefix exists.",
 			op: scim.PatchOperation{
 				Op:   "remove",
 				Path: path("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:manager.value"),

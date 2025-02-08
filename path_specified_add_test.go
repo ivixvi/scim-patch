@@ -63,9 +63,9 @@ func TestPathSpecifiedAdd(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
-		// Extention Singular Attribute
+		// Extension Singular Attribute
 		{
-			name: "Add operation - Extention Singular Attributes - add",
+			name: "Add operation - Extension Singular Attributes - add",
 			op: scim.PatchOperation{
 				Op:    "add",
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
@@ -80,7 +80,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attributes - add",
+			name: "Add operation - Extension Singular Attributes - add",
 			op: scim.PatchOperation{
 				Op:    "add",
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
@@ -100,7 +100,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attributes - replace",
+			name: "Add operation - Extension Singular Attributes - replace",
 			op: scim.PatchOperation{
 				Op:    "add",
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
@@ -121,7 +121,7 @@ func TestPathSpecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attributes - no changed",
+			name: "Add operation - Extension Singular Attributes - no changed",
 			op: scim.PatchOperation{
 				Op:    "add",
 				Path:  path(`urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:department`),
