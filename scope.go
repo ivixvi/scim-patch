@@ -28,24 +28,24 @@ func (n *scopeNavigator) GetMap() map[string]interface{} {
 func (n *scopeNavigator) ApplyScopedMap(scopedMap map[string]interface{}) {
 	uriScoped := n.GetURIScopedMap()
 	if _, required := n.requiredSubAttributes(); required {
-		uriScoped = attatchToMap(uriScoped, scopedMap, n.attr.Name(), required)
+		uriScoped = attachToMap(uriScoped, scopedMap, n.attr.Name(), required)
 	} else {
 		uriScoped = scopedMap
 	}
 
 	data := n.data
 	uriPrefix, containsURI := n.containsURIPrefix()
-	data = attatchToMap(data, uriScoped, uriPrefix, containsURI)
+	data = attachToMap(data, uriScoped, uriPrefix, containsURI)
 	n.data = data
 }
 
 // ApplyScopedMap は 処理対象であるmapまでのスコープをたどりscopedMapに置換します
-func (n *scopeNavigator) ApplyScopedMapSlice(scopedMapSilce []map[string]interface{}) {
+func (n *scopeNavigator) ApplyScopedMapSlice(scopedMapSlice []map[string]interface{}) {
 	uriScoped := n.GetURIScopedMap()
-	uriScoped = attatchToMapSlice(uriScoped, scopedMapSilce, n.attr.Name(), true)
+	uriScoped = attachToMapSlice(uriScoped, scopedMapSlice, n.attr.Name(), true)
 	data := n.data
 	uriPrefix, containsURI := n.containsURIPrefix()
-	data = attatchToMap(data, uriScoped, uriPrefix, containsURI)
+	data = attachToMap(data, uriScoped, uriPrefix, containsURI)
 	n.data = data
 }
 
@@ -85,7 +85,7 @@ func (n *scopeNavigator) containsURIPrefix() (string, bool) {
 	return uriPrefix, ok
 }
 
-// requiredSubAttributes は対象の属性がサブ属性を保持したマップであるかどうかと、サブ属性が対象となったPatchOpeartionかどうかを判断します
+// requiredSubAttributes は対象の属性がサブ属性を保持したマップであるかどうかと、サブ属性が対象となったPatchOperationかどうかを判断します
 func (n *scopeNavigator) requiredSubAttributes() (string, bool) {
 	ok := false
 	subAttr := n.attr.Name()
@@ -110,8 +110,8 @@ func navigateToMap(data map[string]interface{}, attr string, ok bool) map[string
 	return data
 }
 
-// attatchToMap は必要に応じて、パスを戻す処理です
-func attatchToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) map[string]interface{} {
+// attachToMap は必要に応じて、パスを戻す処理です
+func attachToMap(data map[string]interface{}, scoped map[string]interface{}, attr string, ok bool) map[string]interface{} {
 	if ok {
 		if len(scoped) == 0 {
 			delete(data, attr)
@@ -145,8 +145,8 @@ func navigateToMapSlice(data map[string]interface{}, attr string, ok bool) []map
 	return ret
 }
 
-// attatchToMapSlice は必要に応じて、パスを戻す処理です
-func attatchToMapSlice(data map[string]interface{}, scoped []map[string]interface{}, attr string, ok bool) map[string]interface{} {
+// attachToMapSlice は必要に応じて、パスを戻す処理です
+func attachToMapSlice(data map[string]interface{}, scoped []map[string]interface{}, attr string, ok bool) map[string]interface{} {
 	if ok {
 		if len(scoped) == 0 {
 			delete(data, attr)

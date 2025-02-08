@@ -9,7 +9,7 @@ import (
 	scimpatch "github.com/ivixvi/scim-patch"
 )
 
-// TestPathSpecifiedReplace は Pacher.Apply の path指定をしているreplace操作の正常系をテストします
+// TestPathSpecifiedReplace は Patcher.Apply の path指定をしているreplace操作の正常系をテストします
 func TestPathSpecifiedReplace(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {

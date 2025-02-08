@@ -9,8 +9,8 @@ import (
 	scimpatch "github.com/ivixvi/scim-patch"
 )
 
-// TestPathNotspecifiedAdd は Pacher.Apply の path指定をしていない add 操作の正常系をテストします
-func TestPathNotspecifiedAdd(t *testing.T) {
+// TestPathNotSpecifiedAdd は Patcher.Apply の path指定をしていない add 操作の正常系をテストします
+func TestPathNotSpecifiedAdd(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
 		name            string
@@ -351,7 +351,7 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attribute - URI Prefix not exists.",
+			name: "Add operation - Extension Singular Attribute - URI Prefix not exists.",
 			op: scim.PatchOperation{
 				Op: "add",
 				Value: map[string]interface{}{
@@ -369,7 +369,7 @@ func TestPathNotspecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Add operation - Extention Singular Attribute - URI Prefix exists.",
+			name: "Add operation - Extension Singular Attribute - URI Prefix exists.",
 			op: scim.PatchOperation{
 				Op: "add",
 				Value: map[string]interface{}{

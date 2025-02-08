@@ -9,8 +9,8 @@ import (
 	scimpatch "github.com/ivixvi/scim-patch"
 )
 
-// TestPathNotspecifiedReplace は Pacher.Apply の path指定をしていない replace 操作の正常系をテストします
-func TestPathNotspecifiedReplace(t *testing.T) {
+// TestPathNotSpecifiedReplace は Patcher.Apply の path指定をしていない replace 操作の正常系をテストします
+func TestPathNotSpecifiedReplace(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
 		name            string
@@ -250,7 +250,7 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Replace operation - Extention Singular Attribute - URI Prefix not exists.",
+			name: "Replace operation - Extension Singular Attribute - URI Prefix not exists.",
 			op: scim.PatchOperation{
 				Op: "replace",
 				Value: map[string]interface{}{
@@ -268,7 +268,7 @@ func TestPathNotspecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
-			name: "Replace operation - Extention Singular Attribute - URI Prefix exists.",
+			name: "Replace operation - Extension Singular Attribute - URI Prefix exists.",
 			op: scim.PatchOperation{
 				Op: "replace",
 				Value: map[string]interface{}{
