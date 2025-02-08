@@ -10,7 +10,7 @@ import (
 	scimpatch "github.com/ivixvi/scim-patch"
 )
 
-// TestPatcher_Apply は Pacher.Apply の Remove の正常系をテストします
+// TestPatcher_Apply は Patcher.Apply の Remove の正常系をテストします
 func TestPathSpecifiedRemove(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
@@ -407,7 +407,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 	}
 }
 
-// TestPatcher_ApplyError は Pacher.Apply の Remove の異常系をテストします
+// TestPatcher_ApplyError は Patcher.Apply の Remove の異常系をテストします
 func TestRemoveError(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {

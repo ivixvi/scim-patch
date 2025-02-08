@@ -9,7 +9,7 @@ import (
 	scimpatch "github.com/ivixvi/scim-patch"
 )
 
-// TestPathSpecifiedAdd は Pacher.Apply の path指定をしているadd操作の正常系をテストします
+// TestPathSpecifiedAdd は Patcher.Apply の path指定をしているadd操作の正常系をテストします
 func TestPathSpecifiedAdd(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
