@@ -10,19 +10,19 @@ import (
 )
 
 type Patcher struct {
-	schema      schema.Schema
-	schemas     map[string]schema.Schema
-	adder Operator
-	replacer    Operator
-	remover     Operator
+	schema   schema.Schema
+	schemas  map[string]schema.Schema
+	adder    Operator
+	replacer Operator
+	remover  Operator
 }
 
-// PatcherOpts を利用することで Pathcerが利用する各操作の Operator を上書きすることができます。
+// PatcherOpts を利用することで Patcherが利用する各操作の Operator を上書きすることができます。
 // 指定しない場合はパッケージデフォルトで実装されている Operator が利用されます。
 type PatcherOpts struct {
-	Adder *Operator
-	Replacer    *Operator
-	Remover     *Operator
+	Adder    *Operator
+	Replacer *Operator
+	Remover  *Operator
 }
 
 var externalIdAttr = schema.SimpleCoreAttribute(schema.SimpleStringParams(schema.StringParams{
@@ -33,19 +33,19 @@ var externalIdAttr = schema.SimpleCoreAttribute(schema.SimpleStringParams(schema
 // NewPatcher は Patcher の実態を取得します。
 func NewPatcher(
 	s schema.Schema,
-	extentions []schema.Schema,
+	extensions []schema.Schema,
 	opts *PatcherOpts,
 ) *Patcher {
 	schemas := map[string]schema.Schema{s.ID: s}
-	for _, s := range extentions {
+	for _, s := range extensions {
 		schemas[s.ID] = s
 	}
 	patcher := &Patcher{
-		schema:      s,
-		schemas:     schemas,
-		adder: adderInstance,
-		replacer:    replacerInstance,
-		remover:     removerInstance,
+		schema:   s,
+		schemas:  schemas,
+		adder:    adderInstance,
+		replacer: replacerInstance,
+		remover:  removerInstance,
 	}
 	if opts != nil {
 		if opts.Adder != nil {
