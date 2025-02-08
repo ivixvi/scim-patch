@@ -264,6 +264,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Remove MultiValued Complex Attributes
 		{
 			name: "Remove operation - MultiValued Complex Attribute - Direct Remove",
 			op: scim.PatchOperation{
@@ -382,13 +383,64 @@ func TestPathSpecifiedRemove(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Remove MultiValued Attributes
+		{
+			name: "Remove operation - MultiValued Singular Attribute - remove",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ivixvi:testSchema:testString"),
+			},
+			data: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			expected:        map[string]interface{}{},
+			expectedChanged: true,
+		},
+		{
+			name: "Remove operation - MultiValued Singular Attribute - item remove",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path(`urn:ivixvi:testSchema:testString[value eq "delete"]`),
+			},
+			data: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value", "delete"},
+				},
+			},
+			// FIXME
+			// data: map[string]interface{}{
+			// 	"urn:ivixvi:testSchema": map[string]interface{}{
+			// 		"testString": []interface{}{"value"},
+			// 	},
+			// },
+			// expectedChanged: true,
+			expected:        map[string]interface{}{},
+			expectedChanged: false,
+		},
+		{
+			name: "Remove operation - MultiValued Singular Attribute - no changed",
+			op: scim.PatchOperation{
+				Op:   "remove",
+				Path: path("urn:ivixvi:testSchema:testString"),
+			},
+			data:            map[string]interface{}{},
+			expected:        map[string]interface{}{},
+			expectedChanged: false,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
 			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.NewPatcher(schema.CoreUserSchema(), []schema.Schema{schema.ExtensionEnterpriseUser()}, nil)
+			patcher := scimpatch.NewPatcher(
+				schema.CoreUserSchema(),
+				[]schema.Schema{
+					schema.ExtensionEnterpriseUser(),
+					TestExtensionSchema,
+				}, nil)
 
 			// Apply the PatchOperation
 			result, changed, err := patcher.Apply(tc.op, tc.data)

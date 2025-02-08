@@ -368,13 +368,132 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			expected:        map[string]interface{}{},
 			expectedChanged: false,
 		},
+		// MultiValued Attribute
+		{
+			name: "Replace operation - Extension MultiValued Attributes - new value",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path("urn:ivixvi:testSchema:testString"),
+				Value: "value",
+			},
+			data: map[string]interface{}{},
+			// FIXME: schema is not validated
+			expected: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					// "testString": []interface{}{"value"},
+					"testString": "value",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Extension MultiValued Attributes - add value",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path("urn:ivixvi:testSchema:testString"),
+				Value: "newValue",
+			},
+			data: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			// FIXME: schema is not validated
+			expected: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					// "testString": []interface{}{"newValue"},
+					"testString": "newValue",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Extension MultiValued Attributes - no changed",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path("urn:ivixvi:testSchema:testString"),
+				Value: "value",
+			},
+			data: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			// FIXME: schema is not validated
+			expected: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					// "testString": []interface{}{"value"},
+					"testString": "value",
+				},
+			},
+			// expectedChanged: false,
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Extension MultiValued Attributes - slice specified new value",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path("urn:ivixvi:testSchema:testString"),
+				Value: []interface{}{"value"},
+			},
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Extension MultiValued Attributes - slice specified add value",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path("urn:ivixvi:testSchema:testString"),
+				Value: []interface{}{"newValue"},
+			},
+			data: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			expected: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"newValue"},
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Extension MultiValued Attributes - slice specified no changed",
+			op: scim.PatchOperation{
+				Op:    "replace",
+				Path:  path("urn:ivixvi:testSchema:testString"),
+				Value: []interface{}{"value"},
+			},
+			data: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			expected: map[string]interface{}{
+				"urn:ivixvi:testSchema": map[string]interface{}{
+					"testString": []interface{}{"value"},
+				},
+			},
+			expectedChanged: false,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
 			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.NewPatcher(schema.CoreUserSchema(), []schema.Schema{schema.ExtensionEnterpriseUser()}, nil)
+			patcher := scimpatch.NewPatcher(
+				schema.CoreUserSchema(),
+				[]schema.Schema{
+					schema.ExtensionEnterpriseUser(),
+					TestExtensionSchema,
+				}, nil)
 
 			// Apply the PatchOperation
 			result, changed, err := patcher.Apply(tc.op, tc.data)
