@@ -25,13 +25,13 @@ func TestPathSpecifiedReplace(t *testing.T) {
 			op: scim.PatchOperation{
 				Op:    "replace",
 				Path:  path(`externalId`),
-				Value: "galice",
+				Value: "g-alice",
 			},
 			data: map[string]interface{}{
-				"externalId": "gbob",
+				"externalId": "g-bob",
 			},
 			expected: map[string]interface{}{
-				"externalId": "galice",
+				"externalId": "g-alice",
 			},
 			expectedChanged: true,
 		},
