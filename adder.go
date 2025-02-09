@@ -30,7 +30,6 @@ func (r *adder) addMapSlice(scopedMap map[string]interface{}, scopedAttr string,
 	}
 	oldMaps, ok := areEveryItemsMap(oldSlice)
 	if !ok {
-		// WARN: unexpected current value
 		scopedMap[scopedAttr] = newValue
 		return scopedMap, true
 	}
@@ -60,34 +59,27 @@ func (r *adder) addMap(scopedMap map[string]interface{}, scopedAttr string, newV
 
 func (r *adder) addSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) (map[string]interface{}, bool) {
 	oldSlice, ok := scopedMap[scopedAttr].([]interface{})
+	// oldSlice is nil
 	if !ok {
 		scopedMap[scopedAttr] = newValue
 		return scopedMap, true
 	}
+
+	// Complex MultiValued
+	if newMaps, ok := areEveryItemsMap(newValue); ok {
+		return r.addMapSlice(scopedMap, scopedAttr, newMaps)
+	}
+
+	// Singular MultiValued
 	changed := false
-	if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
-		if newMaps, ok := areEveryItemsMap(newValue); ok {
-			for _, newMap := range newMaps {
-				if !containsMap(oldMaps, newMap) {
-					oldMaps = append(oldMaps, newMap)
-					changed = true
-				}
-			}
-			if changed {
-				scopedMap[scopedAttr] = oldMaps
-			}
-			return scopedMap, changed
+	for _, newItem := range newValue {
+		if !containsItem(oldSlice, newItem) {
+			oldSlice = append(oldSlice, newItem)
+			changed = true
 		}
-	} else {
-		for _, newItem := range newValue {
-			if !containsItem(oldSlice, newItem) {
-				oldSlice = append(oldSlice, newItem)
-				changed = true
-			}
-		}
-		if changed {
-			scopedMap[scopedAttr] = oldSlice
-		}
+	}
+	if changed {
+		scopedMap[scopedAttr] = oldSlice
 	}
 	return scopedMap, changed
 }
@@ -102,14 +94,7 @@ func (r *adder) addValue(scopedMap map[string]interface{}, scopedAttr string, ne
 
 func (r *adder) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
-	found := false
-	for _, oldValue := range scopedSlice {
-		if oldValue == value {
-			found = true
-			break
-		}
-	}
-	if !found {
+	if !containsItem(scopedSlice, value) {
 		changed = true
 		scopedSlice = append(scopedSlice, value)
 	}
@@ -122,16 +107,12 @@ func (r *adder) ByValueExpressionForItem(scopedMaps []map[string]interface{}, ex
 		changed := false
 		newValues := []map[string]interface{}{}
 		for _, oldValue := range scopedMaps {
-			if !isMatchExpression(oldValue, expr) {
-				newValues = append(newValues, oldValue)
+			if isMatchExpression(oldValue, expr) && !eqMap(oldValue, newValue) {
+				var merger map[string]interface{}
+				merger, changed = mergeMap(oldValue, newValue)
+				newValues = append(newValues, merger)
 			} else {
-				if !eqMap(oldValue, newValue) {
-					var merger map[string]interface{}
-					merger, changed = mergeMap(oldValue, newValue)
-					newValues = append(newValues, merger)
-				} else {
-					newValues = append(newValues, oldValue)
-				}
+				newValues = append(newValues, oldValue)
 			}
 		}
 		return newValues, changed
@@ -146,19 +127,15 @@ func (r *adder) ByValueExpressionForAttribute(scopedMaps []map[string]interface{
 	newValues := []map[string]interface{}{}
 	found := false
 	for _, oldValue := range scopedMaps {
-		if !isMatchExpression(oldValue, expr) {
-			newValues = append(newValues, oldValue)
-		} else {
+		if isMatchExpression(oldValue, expr) {
 			found = true
 			oldAttrValue, ok := oldValue[subAttr]
 			if !ok || oldAttrValue != value {
 				changed = true
 				oldValue[subAttr] = value
-				newValues = append(newValues, oldValue)
-			} else {
-				newValues = append(newValues, oldValue)
 			}
 		}
+		newValues = append(newValues, oldValue)
 	}
 	if !found {
 		changed = true

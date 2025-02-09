@@ -29,7 +29,6 @@ func (r *replacer) replaceMapSlice(scopedMap map[string]interface{}, scopedAttr 
 		return scopedMap, true
 	}
 	oldMaps, ok := areEveryItemsMap(oldSlice)
-	// WARN: !ok -> unexpected current value
 	if !ok || len(oldMaps) != len(newValue) {
 		scopedMap[scopedAttr] = newValue
 		return scopedMap, true
@@ -54,27 +53,25 @@ func (r *replacer) replaceMap(scopedMap map[string]interface{}, scopedAttr strin
 
 func (r *replacer) replaceSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) (map[string]interface{}, bool) {
 	oldSlice, ok := scopedMap[scopedAttr].([]interface{})
+	// oldSlice is nil
 	if !ok || len(oldSlice) != len(newValue) {
 		scopedMap[scopedAttr] = newValue
 		return scopedMap, true
 	}
-	if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
-		if newMaps, ok := areEveryItemsMap(newValue); ok {
-			for _, newMap := range newMaps {
-				if !containsMap(oldMaps, newMap) {
-					scopedMap[scopedAttr] = newValue
-					return scopedMap, true
-				}
-			}
-		}
-	} else {
-		for _, newItem := range newValue {
-			if !containsItem(oldSlice, newItem) {
-				scopedMap[scopedAttr] = newValue
-				return scopedMap, true
-			}
+
+	// Complex MultiValued
+	if newMaps, ok := areEveryItemsMap(newValue); ok {
+		return r.replaceMapSlice(scopedMap, scopedAttr, newMaps)
+	}
+
+	// Singular MultiValued
+	for _, newItem := range newValue {
+		if !containsItem(oldSlice, newItem) {
+			scopedMap[scopedAttr] = newValue
+			return scopedMap, true
 		}
 	}
+
 	return scopedMap, false
 }
 
@@ -88,14 +85,7 @@ func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr str
 
 func (r *replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
-	found := false
-	for _, oldValue := range scopedSlice {
-		if oldValue == value {
-			found = true
-			break
-		}
-	}
-	if !found {
+	if containsItem(scopedSlice, value) {
 		changed = true
 		scopedSlice = append(scopedSlice, value)
 	}
@@ -103,45 +93,40 @@ func (r *replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) 
 }
 
 func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
-	switch newValue := value.(type) {
-	case map[string]interface{}:
-		changed := false
-		newValues := []map[string]interface{}{}
-		for _, oldValue := range scopedMaps {
-			if !isMatchExpression(oldValue, expr) {
-				newValues = append(newValues, oldValue)
-			} else {
-				if !eqMap(oldValue, newValue) {
-					changed = true
-					newValues = append(newValues, newValue)
-				} else {
-					newValues = append(newValues, oldValue)
-				}
-			}
-		}
-		return newValues, changed
-	default:
-		// unexpected input
+	newValue, ok := value.(map[string]interface{})
+
+	// unexpected input
+	if !ok {
 		return scopedMaps, false
 	}
+
+	changed := false
+	newValues := []map[string]interface{}{}
+	for _, oldValue := range scopedMaps {
+		if isMatchExpression(oldValue, expr) && !eqMap(oldValue, newValue) {
+			changed = true
+			newValues = append(newValues, newValue)
+		} else {
+			newValues = append(newValues, oldValue)
+		}
+
+	}
+	return newValues, changed
+
 }
 
 func (r *replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
-		if !isMatchExpression(oldValue, expr) {
-			newValues = append(newValues, oldValue)
-		} else {
+		if isMatchExpression(oldValue, expr) {
 			oldAttrValue, ok := oldValue[subAttr]
 			if !ok || oldAttrValue != value {
 				changed = true
 				oldValue[subAttr] = value
-				newValues = append(newValues, oldValue)
-			} else {
-				newValues = append(newValues, oldValue)
 			}
 		}
+		newValues = append(newValues, oldValue)
 	}
 	return newValues, changed
 }
