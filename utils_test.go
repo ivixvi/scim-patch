@@ -30,14 +30,14 @@ func TestAreEveryItemsMap(t *testing.T) {
 			},
 			expectedOk: true,
 			expectedSlice: []map[string]interface{}{
-				map[string]interface{}{},
-				map[string]interface{}{},
+				{},
+				{},
 			},
 		},
 		{
 			name: "failed",
 			target: []interface{}{
-				"hoge", 31,
+				"value", 31,
 			},
 			expectedOk:    false,
 			expectedSlice: nil,
