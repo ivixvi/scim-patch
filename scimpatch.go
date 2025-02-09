@@ -204,5 +204,4 @@ func (p *Patcher) pathUnspecifiedOperate(
 		// unexpected input
 		return data, false, nil
 	}
-
 }
