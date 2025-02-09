@@ -63,3 +63,21 @@ func eqMap(m1 map[string]interface{}, m2 map[string]interface{}) bool {
 	}
 	return true
 }
+
+func containsMap(slice []map[string]interface{}, item map[string]interface{}) bool {
+	for _, v := range slice {
+		if eqMap(v, item) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsItem(slice []interface{}, item interface{}) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
