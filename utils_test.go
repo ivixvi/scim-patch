@@ -30,14 +30,14 @@ func TestAreEveryItemsMap(t *testing.T) {
 			},
 			expectedOk: true,
 			expectedSlice: []map[string]interface{}{
-				map[string]interface{}{},
-				map[string]interface{}{},
+				{},
+				{},
 			},
 		},
 		{
 			name: "failed",
 			target: []interface{}{
-				"hoge", 31,
+				"value", 31,
 			},
 			expectedOk:    false,
 			expectedSlice: nil,
@@ -209,6 +209,104 @@ func TestMergeMap(t *testing.T) {
 			if !(tc.expectedOk == ok && fmt.Sprint(tc.expectedMap) == fmt.Sprint(actual)) {
 				t.Fatalf("EqMap() not returned Expected ok: %v, %v", tc.expectedOk, ok)
 				t.Fatalf("EqMap() not returned Expected map: %v, %v", tc.expectedMap, actual)
+			}
+		})
+	}
+}
+
+// TestContainsMap は containsMap をテストします
+func TestContainsMap(t *testing.T) {
+	// Define the test cases
+	testCases := []struct {
+		name     string
+		slice    []map[string]interface{}
+		item     map[string]interface{}
+		expected bool
+	}{
+		{
+			name:     "empty slice",
+			slice:    []map[string]interface{}{},
+			item:     map[string]interface{}{"key": "value"},
+			expected: false,
+		},
+		{
+			name: "item not in slice",
+			slice: []map[string]interface{}{
+				{"key1": "value1"},
+				{"key2": "value2"},
+			},
+			item:     map[string]interface{}{"key": "value"},
+			expected: false,
+		},
+		{
+			name: "item in slice",
+			slice: []map[string]interface{}{
+				{"key1": "value1"},
+				{"key": "value"},
+			},
+			item:     map[string]interface{}{"key": "value"},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Log(tc.name)
+			// call ContainsMap
+			ok := scimpatch.ContainsMap(tc.slice, tc.item)
+
+			// Check if the result matches the expected data
+			if !(tc.expected == ok) {
+				t.Fatalf("ContainsMap() not returned Expected: %v, %v", tc.expected, ok)
+			}
+		})
+	}
+}
+
+// TestContainsItem は containsItem をテストします
+func TestContainsItem(t *testing.T) {
+	// Define the test cases
+	testCases := []struct {
+		name     string
+		slice    []interface{}
+		item     interface{}
+		expected bool
+	}{
+		{
+			name:     "empty slice",
+			slice:    []interface{}{},
+			item:     "value",
+			expected: false,
+		},
+		{
+			name: "item not in slice",
+			slice: []interface{}{
+				"value1",
+				"value2",
+			},
+			item:     "value",
+			expected: false,
+		},
+		{
+			name: "item in slice",
+			slice: []interface{}{
+				"value1",
+				"value",
+			},
+			item:     "value",
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Log(tc.name)
+			// call ContainsItem
+			ok := scimpatch.ContainsItem(tc.slice, tc.item)
+
+			// Check if the result matches the expected data
+			if !(tc.expected == ok) {
+				t.Fatalf("ContainsItem() not returned Expected: %v, %v", tc.expected, ok)
 			}
 		})
 	}

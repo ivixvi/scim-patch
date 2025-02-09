@@ -11,98 +11,92 @@ var adderInstance *adder
 func (r *adder) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
-		oldSlice, ok := scopedMap[scopedAttr]
-		if !ok {
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
+		return r.addMapSlice(scopedMap, scopedAttr, newValue)
+	case map[string]interface{}:
+		return r.addMap(scopedMap, scopedAttr, newValue)
+	case []interface{}:
+		return r.addSlice(scopedMap, scopedAttr, newValue)
+	case interface{}:
+		return r.addValue(scopedMap, scopedAttr, newValue)
+	}
+	return scopedMap, false
+}
+
+func (r *adder) addMapSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []map[string]interface{}) (map[string]interface{}, bool) {
+	oldSlice, ok := scopedMap[scopedAttr]
+	if !ok {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
+	oldMaps, ok := areEveryItemsMap(oldSlice)
+	if !ok {
+		// WARN: unexpected current value
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
+	changed := false
+	for _, newMap := range newValue {
+		if !containsMap(oldMaps, newMap) {
+			oldMaps = append(oldMaps, newMap)
+			changed = true
 		}
-		oldMaps, ok := areEveryItemsMap(oldSlice)
-		if !ok {
-			// WARN: unexpected current value
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
+	}
+	if changed {
+		scopedMap[scopedAttr] = oldMaps
+	}
+	return scopedMap, changed
+}
+
+func (r *adder) addMap(scopedMap map[string]interface{}, scopedAttr string, newValue map[string]interface{}) (map[string]interface{}, bool) {
+	oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
+	if ok {
 		changed := false
-		for _, newMap := range newValue {
-			found := false
-			for _, oldMap := range oldMaps {
-				if eqMap(newMap, oldMap) {
-					found = true
-					break
+		scopedMap[scopedAttr], changed = mergeMap(oldMap, newValue)
+		return scopedMap, changed
+	}
+	scopedMap[scopedAttr] = newValue
+	return scopedMap, true
+}
+
+func (r *adder) addSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) (map[string]interface{}, bool) {
+	oldSlice, ok := scopedMap[scopedAttr].([]interface{})
+	if !ok {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
+	changed := false
+	if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
+		if newMaps, ok := areEveryItemsMap(newValue); ok {
+			for _, newMap := range newMaps {
+				if !containsMap(oldMaps, newMap) {
+					oldMaps = append(oldMaps, newMap)
+					changed = true
 				}
 			}
-			if !found {
-				oldMaps = append(oldMaps, newMap)
+			if changed {
+				scopedMap[scopedAttr] = oldMaps
+			}
+			return scopedMap, changed
+		}
+	} else {
+		for _, newItem := range newValue {
+			if !containsItem(oldSlice, newItem) {
+				oldSlice = append(oldSlice, newItem)
 				changed = true
 			}
 		}
 		if changed {
-			scopedMap[scopedAttr] = oldMaps
-		}
-		return scopedMap, changed
-	case map[string]interface{}:
-		oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
-		if ok {
-			changed := false
-			scopedMap[scopedAttr], changed = mergeMap(oldMap, newValue)
-			return scopedMap, changed
-		}
-		scopedMap[scopedAttr] = value
-		return scopedMap, true
-	case []interface{}:
-		oldSlice, ok := scopedMap[scopedAttr].([]interface{})
-		if !ok {
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
-		changed := false
-		if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
-			if newMaps, ok := areEveryItemsMap(newValue); ok {
-				for _, newMap := range newMaps {
-					found := false
-					for _, oldMap := range oldMaps {
-						if eqMap(newMap, oldMap) {
-							found = true
-							break
-						}
-					}
-					if !found {
-						oldMaps = append(oldMaps, newMap)
-						changed = true
-					}
-				}
-				if changed {
-					scopedMap[scopedAttr] = oldMaps
-				}
-
-				return scopedMap, changed
-			}
-		} else {
-			for _, newItem := range newValue {
-				found := false
-				for _, oldItem := range oldSlice {
-					if newItem == oldItem {
-						found = true
-						break
-					}
-				}
-				if !found {
-					changed = true
-					oldSlice = append(oldSlice, newItem)
-				}
-			}
-			if changed {
-				scopedMap[scopedAttr] = oldSlice
-			}
-		}
-		return scopedMap, changed
-	case interface{}:
-		if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
-			scopedMap[scopedAttr] = value
-			return scopedMap, true
+			scopedMap[scopedAttr] = oldSlice
 		}
 	}
+	return scopedMap, changed
+}
 
+func (r *adder) addValue(scopedMap map[string]interface{}, scopedAttr string, newValue interface{}) (map[string]interface{}, bool) {
+	if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
 	return scopedMap, false
 }
 
