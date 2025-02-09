@@ -47,14 +47,11 @@ func (r *remover) ByValueExpressionForAttribute(scopedMaps []map[string]interfac
 		if !isMatchExpression(oldValue, expr) {
 			newValues = append(newValues, oldValue)
 		} else {
-			_, ok := oldValue[subAttr]
-			if ok {
+			if _, ok := oldValue[subAttr]; ok {
 				changed = true
 				delete(oldValue, subAttr)
-				newValues = append(newValues, oldValue)
-			} else {
-				newValues = append(newValues, oldValue)
 			}
+			newValues = append(newValues, oldValue)
 		}
 	}
 	return newValues, changed

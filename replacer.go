@@ -11,91 +11,78 @@ var replacerInstance *replacer
 func (r *replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
-		oldSlice, ok := scopedMap[scopedAttr]
-		if !ok {
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
-		oldMaps, ok := areEveryItemsMap(oldSlice)
-		if !ok {
-			// WARN: unexpected current value
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
-		if len(oldMaps) != len(newValue) {
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
-		for _, newMap := range newValue {
-			found := false
-			for _, oldMap := range oldMaps {
-				if eqMap(newMap, oldMap) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				scopedMap[scopedAttr] = newValue
-				return scopedMap, true
-			}
-		}
-		return scopedMap, false
+		return r.replaceMapSlice(scopedMap, scopedAttr, newValue)
 	case map[string]interface{}:
-		oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
-		if ok && eqMap(newValue, oldMap) {
-			return scopedMap, false
-		}
-		scopedMap[scopedAttr] = value
-		return scopedMap, true
+		return r.replaceMap(scopedMap, scopedAttr, newValue)
 	case []interface{}:
-		oldSlice, ok := scopedMap[scopedAttr].([]interface{})
-		if !ok {
+		return r.replaceSlice(scopedMap, scopedAttr, newValue)
+	case interface{}:
+		return r.replaceValue(scopedMap, scopedAttr, newValue)
+	}
+	return scopedMap, false
+}
+
+func (r *replacer) replaceMapSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []map[string]interface{}) (map[string]interface{}, bool) {
+	oldSlice, ok := scopedMap[scopedAttr]
+	if !ok {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
+	oldMaps, ok := areEveryItemsMap(oldSlice)
+	// WARN: !ok -> unexpected current value
+	if !ok || len(oldMaps) != len(newValue) {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
+	for _, newMap := range newValue {
+		if !containsMap(oldMaps, newMap) {
 			scopedMap[scopedAttr] = newValue
 			return scopedMap, true
 		}
-		if len(oldSlice) != len(newValue) {
-			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
-		}
-		if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
-			if newMaps, ok := areEveryItemsMap(newValue); ok {
-				for _, newMap := range newMaps {
-					found := false
-					for _, oldMap := range oldMaps {
-						if eqMap(newMap, oldMap) {
-							found = true
-							break
-						}
-					}
-					if !found {
-						scopedMap[scopedAttr] = newValue
-						return scopedMap, true
-					}
-				}
-			}
-		} else {
-			for _, newItem := range newValue {
-				found := false
-				for _, oldItem := range oldSlice {
-					if newItem == oldItem {
-						found = true
-						break
-					}
-				}
-				if !found {
+	}
+	return scopedMap, false
+}
+
+func (r *replacer) replaceMap(scopedMap map[string]interface{}, scopedAttr string, newValue map[string]interface{}) (map[string]interface{}, bool) {
+	oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
+	if ok && eqMap(newValue, oldMap) {
+		return scopedMap, false
+	}
+	scopedMap[scopedAttr] = newValue
+	return scopedMap, true
+}
+
+func (r *replacer) replaceSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) (map[string]interface{}, bool) {
+	oldSlice, ok := scopedMap[scopedAttr].([]interface{})
+	if !ok || len(oldSlice) != len(newValue) {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
+	if oldMaps, ok := areEveryItemsMap(oldSlice); ok {
+		if newMaps, ok := areEveryItemsMap(newValue); ok {
+			for _, newMap := range newMaps {
+				if !containsMap(oldMaps, newMap) {
 					scopedMap[scopedAttr] = newValue
 					return scopedMap, true
 				}
 			}
 		}
-		return scopedMap, false
-	case interface{}:
-		if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
-			scopedMap[scopedAttr] = value
-			return scopedMap, true
+	} else {
+		for _, newItem := range newValue {
+			if !containsItem(oldSlice, newItem) {
+				scopedMap[scopedAttr] = newValue
+				return scopedMap, true
+			}
 		}
 	}
+	return scopedMap, false
+}
 
+func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr string, newValue interface{}) (map[string]interface{}, bool) {
+	if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
+		scopedMap[scopedAttr] = newValue
+		return scopedMap, true
+	}
 	return scopedMap, false
 }
 
