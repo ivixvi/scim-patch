@@ -155,7 +155,6 @@ func (p *Patcher) pathSpecifiedOperate(
 		scopedMap, scopedAttr := n.GetScopedMap()
 		scopedMap, changed = operator.Direct(scopedMap, scopedAttr, op.Value)
 		n.ApplyScopedMap(scopedMap)
-		data = n.GetMap()
 	}
 
 	return data, changed, nil
