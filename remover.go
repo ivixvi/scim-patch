@@ -14,19 +14,6 @@ func (r *remover) Direct(scopedMap map[string]interface{}, scopedAttr string, va
 	return false
 }
 
-func (r *remover) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
-	changed := false
-	newValues := []interface{}{}
-	for _, oldValue := range scopedSlice {
-		if oldValue != value {
-			newValues = append(newValues, oldValue)
-		} else {
-			changed = true
-		}
-	}
-	return newValues, changed
-}
-
 func (r *remover) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	changed := false
 	newValues := []map[string]interface{}{}
