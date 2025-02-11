@@ -19,6 +19,10 @@ type loggerKey struct{}
 // key is the context key for the logger.
 var key = loggerKey{}
 
+// AddLogger adds a logger to the context.
+// If the context already has a logger, AddLogger will overwrite it.
+// If the logger is nil, AddLogger will add a no-op logger.
+// The logger used by the Patcher.
 func AddLogger(ctx context.Context, logger PatcherLogger) context.Context {
 	return context.WithValue(ctx, key, logger)
 }
