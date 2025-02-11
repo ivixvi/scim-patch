@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/elimity-com/scim"
@@ -94,11 +96,15 @@ func (h testResourceHandler) Patch(r *http.Request, id string, operations []scim
 		return scim.Resource{}, errors.ScimErrorResourceNotFound(id)
 	}
 
+	// add logger to context for patcher
+	logger := log.New(os.Stdout, "patcher: ", log.LstdFlags)
+	ctx := scimpatch.AddLogger(r.Context(), newLogger(logger))
+
 	// Apply PATCH operations
 	var err error
 	var changed bool
 	for _, op := range operations {
-		data.resourceAttributes, changed, err = h.patcher.Apply(op, data.resourceAttributes)
+		data.resourceAttributes, changed, err = h.patcher.Apply(ctx, op, data.resourceAttributes)
 		if err != nil {
 			return scim.Resource{}, err
 		}

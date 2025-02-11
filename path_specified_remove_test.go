@@ -1,6 +1,7 @@
 package scimpatch_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -443,7 +444,7 @@ func TestPathSpecifiedRemove(t *testing.T) {
 				}, nil)
 
 			// Apply the PatchOperation
-			result, changed, err := patcher.Apply(tc.op, tc.data)
+			result, changed, err := patcher.Apply(context.TODO(), tc.op, tc.data)
 			if err != nil {
 				t.Fatalf("Apply() returned an unexpected error: %v", err)
 			}
@@ -483,7 +484,7 @@ func TestRemoveError(t *testing.T) {
 			patcher := scimpatch.Patcher{}
 
 			// Apply the PatchOperation
-			_, _, err := patcher.Apply(tc.op, map[string]interface{}{})
+			_, _, err := patcher.Apply(context.TODO(), tc.op, map[string]interface{}{})
 			if err == nil {
 				t.Fatalf("Apply() not returned error")
 			}

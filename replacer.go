@@ -1,6 +1,8 @@
 package scimpatch
 
 import (
+	"context"
+
 	"github.com/scim2/filter-parser/v2"
 )
 
@@ -8,7 +10,7 @@ type replacer struct{}
 
 var replacerInstance *replacer
 
-func (r *replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) bool {
+func (r *replacer) Direct(ctx context.Context, scopedMap map[string]interface{}, scopedAttr string, value interface{}) bool {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
 		return r.replaceMapSlice(scopedMap, scopedAttr, newValue)
@@ -83,11 +85,12 @@ func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr str
 	return false
 }
 
-func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
+func (r *replacer) ByValueExpressionForItem(ctx context.Context, scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
+	logger := getLogger(ctx)
 	newValue, ok := value.(map[string]interface{})
 
-	// unexpected input
 	if !ok {
+		logger.Debug("unexpected input")
 		return scopedMaps, false
 	}
 
@@ -101,7 +104,7 @@ func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{},
 	return scopedMaps, changed
 }
 
-func (r *replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
+func (r *replacer) ByValueExpressionForAttribute(ctx context.Context, scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
 	scopedMaps, changed, _ := replaceByValueExpressionForAttribute(scopedMaps, expr, subAttr, value)
 	return scopedMaps, changed
 }

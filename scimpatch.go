@@ -1,6 +1,7 @@
 package scimpatch
 
 import (
+	"context"
 	"strings"
 
 	"github.com/elimity-com/scim"
@@ -64,14 +65,14 @@ func NewPatcher(
 // Apply は RFC7644 3.5.2.  Modifying with PATCH の実装です。
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2
-func (p *Patcher) Apply(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
+func (p *Patcher) Apply(ctx context.Context, op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	switch strings.ToLower(op.Op) {
 	case scim.PatchOperationAdd:
-		return p.add(op, data)
+		return p.add(ctx, op, data)
 	case scim.PatchOperationReplace:
-		return p.replace(op, data)
+		return p.replace(ctx, op, data)
 	case scim.PatchOperationRemove:
-		return p.remove(op, data)
+		return p.remove(ctx, op, data)
 	}
 	return data, false, nil
 }
@@ -80,34 +81,34 @@ func (p *Patcher) Apply(op scim.PatchOperation, data map[string]interface{}) (ma
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.1
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) add(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
+func (p *Patcher) add(ctx context.Context, op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
-		return p.pathUnspecifiedOperate(op, data, p.adder)
+		return p.pathUnspecifiedOperate(ctx, op, data, p.adder)
 	}
-	return p.pathSpecifiedOperate(op, data, p.adder)
+	return p.pathSpecifiedOperate(ctx, op, data, p.adder)
 }
 
 // replace は RFC7644 3.5.2.3. Replace Operation の実装です。
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.3
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) replace(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
+func (p *Patcher) replace(ctx context.Context, op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
-		return p.pathUnspecifiedOperate(op, data, p.replacer)
+		return p.pathUnspecifiedOperate(ctx, op, data, p.replacer)
 	}
-	return p.pathSpecifiedOperate(op, data, p.replacer)
+	return p.pathSpecifiedOperate(ctx, op, data, p.replacer)
 }
 
 // remove は RFC7644 3.5.2.2. Remove Operation の実装です。
 // data に op が適用された ResourceAttributes と実際に適用されたかどうかの真偽値を返却します。
 // see. https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.2
 // 基本は Validated な op を想定しているため、エラーハンドリングは属性を確認するうえで対応することになる最小限のチェックとなっています。
-func (p *Patcher) remove(op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
+func (p *Patcher) remove(ctx context.Context, op scim.PatchOperation, data map[string]interface{}) (map[string]interface{}, bool, error) {
 	if op.Path == nil {
 		// If "path" is unspecified, the operation fails with HTTP status code 400 and a "scimType" error code of "noTarget".
 		return map[string]interface{}{}, false, errors.ScimErrorNoTarget
 	}
-	return p.pathSpecifiedOperate(op, data, p.remover)
+	return p.pathSpecifiedOperate(ctx, op, data, p.remover)
 }
 
 // containsAttribute は attrName がサーバーで利用されているスキーマの属性名として適切かを確認し、取得します。
@@ -125,6 +126,7 @@ func (p *Patcher) containsAttribute(attrName string) (schema.CoreAttribute, bool
 }
 
 func (p *Patcher) pathSpecifiedOperate(
+	ctx context.Context,
 	op scim.PatchOperation,
 	data map[string]interface{},
 	operator Operator,
@@ -145,18 +147,18 @@ func (p *Patcher) pathSpecifiedOperate(
 	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
-		newValues, changed = operator.ByValueExpressionForAttribute(oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, op.Value)
+		newValues, changed = operator.ByValueExpressionForAttribute(ctx, oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, op.Value)
 		n.ApplyScopedMapSlice(newValues)
 	// request path is `attr[expr]`
 	case attr.MultiValued() && op.Path.ValueExpression != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
-		newValues, changed = operator.ByValueExpressionForItem(oldValues, op.Path.ValueExpression, op.Value)
+		newValues, changed = operator.ByValueExpressionForItem(ctx, oldValues, op.Path.ValueExpression, op.Value)
 		n.ApplyScopedMapSlice(newValues)
 	// request path is `attr`, `attr.subAttr`
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
-		changed = operator.Direct(scopedMap, scopedAttr, op.Value)
+		changed = operator.Direct(ctx, scopedMap, scopedAttr, op.Value)
 		n.ApplyScopedMap(scopedMap)
 	}
 
@@ -164,6 +166,7 @@ func (p *Patcher) pathSpecifiedOperate(
 }
 
 func (p *Patcher) pathUnspecifiedOperate(
+	ctx context.Context,
 	op scim.PatchOperation,
 	data map[string]interface{},
 	operator Operator,
@@ -175,7 +178,7 @@ func (p *Patcher) pathUnspecifiedOperate(
 			uriPrefix, ok := p.schemas[attr]
 			// Core Attributes
 			if !ok {
-				changed = changed || operator.Direct(data, attr, value)
+				changed = changed || operator.Direct(ctx, data, attr, value)
 				continue
 			}
 
@@ -192,7 +195,7 @@ func (p *Patcher) pathUnspecifiedOperate(
 			// if exists, write by every attributes
 			if newUriMap, ok := value.(map[string]interface{}); ok {
 				for scopedAttr, scopedValue := range newUriMap {
-					changed = changed || operator.Direct(oldMap, scopedAttr, scopedValue)
+					changed = changed || operator.Direct(ctx, oldMap, scopedAttr, scopedValue)
 				}
 			}
 		}
