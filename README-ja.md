@@ -22,9 +22,17 @@ SCIM2.0のPatch操作の仕様の幅が広く、また、IdP毎の差異を吸�
 - https://github.com/elimity-com/scim
 - https://github.com/scim2/filter-parser
 
-### 想定される使用例
+
+## 想定される使用例
 
 構想としては以下のIssueが近く、この例のような形で実装できることを期待しています。
 https://github.com/elimity-com/scim/issues/171
 
 現在の実装における利用例は [example](./_example/README-ja.md) をご確認ください。
+
+### ロガー
+
+Patcherの内部処理のロギングはロガーをコンテキストを経由して渡すことで可能です。
+PatcherLoggerインターフェイスを実装したロガーを利用することができます。
+
+具体的な利用例は [example](./_example/README-ja.md) をご確認ください。
