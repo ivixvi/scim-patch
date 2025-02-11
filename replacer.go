@@ -85,7 +85,7 @@ func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr str
 
 func (r *replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
 	changed := false
-	if containsItem(scopedSlice, value) {
+	if !containsItem(scopedSlice, value) {
 		changed = true
 		scopedSlice = append(scopedSlice, value)
 	}
@@ -116,10 +116,22 @@ func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{},
 }
 
 func (r *replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
+	newValues, changed, _ := replaceByValueExpressionForAttribute(scopedMaps, expr, subAttr, value)
+	return newValues, changed
+}
+
+func replaceByValueExpressionForAttribute(
+	scopedMaps []map[string]interface{},
+	expr filter.Expression,
+	subAttr string,
+	value interface{},
+) ([]map[string]interface{}, bool, bool) {
 	changed := false
+	found := false
 	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
 		if isMatchExpression(oldValue, expr) {
+			found = true
 			oldAttrValue, ok := oldValue[subAttr]
 			if !ok || oldAttrValue != value {
 				changed = true
@@ -128,5 +140,5 @@ func (r *replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interfa
 		}
 		newValues = append(newValues, oldValue)
 	}
-	return newValues, changed
+	return newValues, changed, found
 }
