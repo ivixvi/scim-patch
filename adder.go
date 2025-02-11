@@ -8,7 +8,7 @@ type adder struct{}
 
 var adderInstance *adder
 
-func (r *adder) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
+func (r *adder) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) bool {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
 		return r.addMapSlice(scopedMap, scopedAttr, newValue)
@@ -19,19 +19,19 @@ func (r *adder) Direct(scopedMap map[string]interface{}, scopedAttr string, valu
 	case interface{}:
 		return r.addValue(scopedMap, scopedAttr, newValue)
 	}
-	return scopedMap, false
+	return false
 }
 
-func (r *adder) addMapSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []map[string]interface{}) (map[string]interface{}, bool) {
+func (r *adder) addMapSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []map[string]interface{}) bool {
 	oldSlice, ok := scopedMap[scopedAttr]
 	if !ok {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
 	oldMaps, ok := areEveryItemsMap(oldSlice)
 	if !ok {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
 	changed := false
 	for _, newMap := range newValue {
@@ -43,26 +43,26 @@ func (r *adder) addMapSlice(scopedMap map[string]interface{}, scopedAttr string,
 	if changed {
 		scopedMap[scopedAttr] = oldMaps
 	}
-	return scopedMap, changed
+	return changed
 }
 
-func (r *adder) addMap(scopedMap map[string]interface{}, scopedAttr string, newValue map[string]interface{}) (map[string]interface{}, bool) {
+func (r *adder) addMap(scopedMap map[string]interface{}, scopedAttr string, newValue map[string]interface{}) bool {
 	oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
 	if ok {
 		changed := false
 		scopedMap[scopedAttr], changed = mergeMap(oldMap, newValue)
-		return scopedMap, changed
+		return changed
 	}
 	scopedMap[scopedAttr] = newValue
-	return scopedMap, true
+	return true
 }
 
-func (r *adder) addSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) (map[string]interface{}, bool) {
+func (r *adder) addSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) bool {
 	oldSlice, ok := scopedMap[scopedAttr].([]interface{})
 	// oldSlice is nil
 	if !ok {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
 
 	// Complex MultiValued
@@ -81,15 +81,15 @@ func (r *adder) addSlice(scopedMap map[string]interface{}, scopedAttr string, ne
 	if changed {
 		scopedMap[scopedAttr] = oldSlice
 	}
-	return scopedMap, changed
+	return changed
 }
 
-func (r *adder) addValue(scopedMap map[string]interface{}, scopedAttr string, newValue interface{}) (map[string]interface{}, bool) {
+func (r *adder) addValue(scopedMap map[string]interface{}, scopedAttr string, newValue interface{}) bool {
 	if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
-	return scopedMap, false
+	return false
 }
 
 func (r *adder) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {

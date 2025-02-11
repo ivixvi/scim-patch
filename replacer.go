@@ -8,7 +8,7 @@ type replacer struct{}
 
 var replacerInstance *replacer
 
-func (r *replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
+func (r *replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) bool {
 	switch newValue := value.(type) {
 	case []map[string]interface{}:
 		return r.replaceMapSlice(scopedMap, scopedAttr, newValue)
@@ -19,44 +19,44 @@ func (r *replacer) Direct(scopedMap map[string]interface{}, scopedAttr string, v
 	case interface{}:
 		return r.replaceValue(scopedMap, scopedAttr, newValue)
 	}
-	return scopedMap, false
+	return false
 }
 
-func (r *replacer) replaceMapSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []map[string]interface{}) (map[string]interface{}, bool) {
+func (r *replacer) replaceMapSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []map[string]interface{}) bool {
 	oldSlice, ok := scopedMap[scopedAttr]
 	if !ok {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
 	oldMaps, ok := areEveryItemsMap(oldSlice)
 	if !ok || len(oldMaps) != len(newValue) {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
 	for _, newMap := range newValue {
 		if !containsMap(oldMaps, newMap) {
 			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
+			return true
 		}
 	}
-	return scopedMap, false
+	return false
 }
 
-func (r *replacer) replaceMap(scopedMap map[string]interface{}, scopedAttr string, newValue map[string]interface{}) (map[string]interface{}, bool) {
+func (r *replacer) replaceMap(scopedMap map[string]interface{}, scopedAttr string, newValue map[string]interface{}) bool {
 	oldMap, ok := scopedMap[scopedAttr].(map[string]interface{})
 	if ok && eqMap(newValue, oldMap) {
-		return scopedMap, false
+		return false
 	}
 	scopedMap[scopedAttr] = newValue
-	return scopedMap, true
+	return true
 }
 
-func (r *replacer) replaceSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) (map[string]interface{}, bool) {
+func (r *replacer) replaceSlice(scopedMap map[string]interface{}, scopedAttr string, newValue []interface{}) bool {
 	oldSlice, ok := scopedMap[scopedAttr].([]interface{})
 	// oldSlice is nil
 	if !ok || len(oldSlice) != len(newValue) {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
 
 	// Complex MultiValued
@@ -68,19 +68,19 @@ func (r *replacer) replaceSlice(scopedMap map[string]interface{}, scopedAttr str
 	for _, newItem := range newValue {
 		if !containsItem(oldSlice, newItem) {
 			scopedMap[scopedAttr] = newValue
-			return scopedMap, true
+			return true
 		}
 	}
 
-	return scopedMap, false
+	return false
 }
 
-func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr string, newValue interface{}) (map[string]interface{}, bool) {
+func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr string, newValue interface{}) bool {
 	if oldValue, ok := scopedMap[scopedAttr]; !ok || oldValue != newValue {
 		scopedMap[scopedAttr] = newValue
-		return scopedMap, true
+		return true
 	}
-	return scopedMap, false
+	return false
 }
 
 func (r *replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
