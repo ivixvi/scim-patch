@@ -92,15 +92,6 @@ func (r *adder) addValue(scopedMap map[string]interface{}, scopedAttr string, ne
 	return false
 }
 
-func (r *adder) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
-	changed := false
-	if !containsItem(scopedSlice, value) {
-		changed = true
-		scopedSlice = append(scopedSlice, value)
-	}
-	return scopedSlice, changed
-}
-
 func (r *adder) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	newValue, ok := value.(map[string]interface{})
 

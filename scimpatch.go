@@ -141,16 +141,19 @@ func (p *Patcher) pathSpecifiedOperate(
 	}
 	n := newScopeNavigator(op, data, attr)
 	switch {
+	// request path is `attr[expr].subAttr`
 	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
 		newValues, changed = operator.ByValueExpressionForAttribute(oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, op.Value)
 		n.ApplyScopedMapSlice(newValues)
+	// request path is `attr[expr]`
 	case attr.MultiValued() && op.Path.ValueExpression != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
 		newValues, changed = operator.ByValueExpressionForItem(oldValues, op.Path.ValueExpression, op.Value)
 		n.ApplyScopedMapSlice(newValues)
+	// request path is `attr`, `attr.subAttr`
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
 		changed = operator.Direct(scopedMap, scopedAttr, op.Value)
@@ -170,29 +173,26 @@ func (p *Patcher) pathUnspecifiedOperate(
 		changed := false
 		for attr, value := range newMap {
 			uriPrefix, ok := p.schemas[attr]
-			if ok {
-				oldMap, ok := data[uriPrefix.ID].(map[string]interface{})
-				if !ok {
-					changed = true
-					data[uriPrefix.ID] = value
-				} else {
-					newUriMap, ok := value.(map[string]interface{})
-					if !ok {
-						// unexpected input
-						continue
-					}
-					for scopedAttr, scopedValue := range newUriMap {
-						changed_ := operator.Direct(oldMap, scopedAttr, scopedValue)
-						if changed_ {
-							changed = changed_ || changed
-						}
-					}
-					data[uriPrefix.ID] = oldMap
-				}
-			} else {
-				changed_ := operator.Direct(data, attr, value)
-				if changed_ {
-					changed = changed_ || changed
+			// Core Attributes
+			if !ok {
+				changed = changed || operator.Direct(data, attr, value)
+				continue
+			}
+
+			// Schema Extension Attributes
+			oldMap, ok := data[uriPrefix.ID].(map[string]interface{})
+
+			// if not exists, write all attributes
+			if !ok {
+				changed = true
+				data[uriPrefix.ID] = value
+				continue
+			}
+
+			// if exists, write by every attributes
+			if newUriMap, ok := value.(map[string]interface{}); ok {
+				for scopedAttr, scopedValue := range newUriMap {
+					changed = changed || operator.Direct(oldMap, scopedAttr, scopedValue)
 				}
 			}
 		}

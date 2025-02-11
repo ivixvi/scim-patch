@@ -83,15 +83,6 @@ func (r *replacer) replaceValue(scopedMap map[string]interface{}, scopedAttr str
 	return false
 }
 
-func (r *replacer) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
-	changed := false
-	if !containsItem(scopedSlice, value) {
-		changed = true
-		scopedSlice = append(scopedSlice, value)
-	}
-	return scopedSlice, changed
-}
-
 func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{}, expr filter.Expression, value interface{}) ([]map[string]interface{}, bool) {
 	newValue, ok := value.(map[string]interface{})
 
