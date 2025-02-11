@@ -131,7 +131,6 @@ func (p *Patcher) pathSpecifiedOperate(
 	data map[string]interface{},
 	operator Operator,
 ) (map[string]interface{}, bool, error) {
-	logger(ctx).Debug("Start: pathSpecifiedOperate")
 	var changed = false
 	// Resolve Attribute
 	attrName := op.Path.AttributePath.AttributeName
@@ -148,18 +147,18 @@ func (p *Patcher) pathSpecifiedOperate(
 	case attr.MultiValued() && op.Path.ValueExpression != nil && op.Path.SubAttribute != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
-		newValues, changed = operator.ByValueExpressionForAttribute(oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, op.Value)
+		newValues, changed = operator.ByValueExpressionForAttribute(ctx, oldValues, op.Path.ValueExpression, *op.Path.SubAttribute, op.Value)
 		n.ApplyScopedMapSlice(newValues)
 	// request path is `attr[expr]`
 	case attr.MultiValued() && op.Path.ValueExpression != nil:
 		var newValues []map[string]interface{}
 		oldValues := n.GetScopedMapSlice()
-		newValues, changed = operator.ByValueExpressionForItem(oldValues, op.Path.ValueExpression, op.Value)
+		newValues, changed = operator.ByValueExpressionForItem(ctx, oldValues, op.Path.ValueExpression, op.Value)
 		n.ApplyScopedMapSlice(newValues)
 	// request path is `attr`, `attr.subAttr`
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
-		changed = operator.Direct(scopedMap, scopedAttr, op.Value)
+		changed = operator.Direct(ctx, scopedMap, scopedAttr, op.Value)
 		n.ApplyScopedMap(scopedMap)
 	}
 
@@ -179,7 +178,7 @@ func (p *Patcher) pathUnspecifiedOperate(
 			uriPrefix, ok := p.schemas[attr]
 			// Core Attributes
 			if !ok {
-				changed = changed || operator.Direct(data, attr, value)
+				changed = changed || operator.Direct(ctx, data, attr, value)
 				continue
 			}
 
@@ -196,7 +195,7 @@ func (p *Patcher) pathUnspecifiedOperate(
 			// if exists, write by every attributes
 			if newUriMap, ok := value.(map[string]interface{}); ok {
 				for scopedAttr, scopedValue := range newUriMap {
-					changed = changed || operator.Direct(oldMap, scopedAttr, scopedValue)
+					changed = changed || operator.Direct(ctx, oldMap, scopedAttr, scopedValue)
 				}
 			}
 		}

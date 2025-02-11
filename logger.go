@@ -19,11 +19,11 @@ type loggerKey struct{}
 // key is the context key for the logger.
 var key = loggerKey{}
 
-func AddLogger(ctx context.Context, logger *PatcherLogger) context.Context {
+func AddLogger(ctx context.Context, logger PatcherLogger) context.Context {
 	return context.WithValue(ctx, key, logger)
 }
 
-func logger(ctx context.Context) PatcherLogger {
+func getLogger(ctx context.Context) PatcherLogger {
 	l, ok := ctx.Value(key).(PatcherLogger)
 	if !ok {
 		return noop
