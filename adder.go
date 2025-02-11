@@ -110,27 +110,23 @@ func (r *adder) ByValueExpressionForItem(scopedMaps []map[string]interface{}, ex
 	}
 
 	changed := false
-	newValues := []map[string]interface{}{}
-	for _, oldValue := range scopedMaps {
+	for i, oldValue := range scopedMaps {
 		if isMatchExpression(oldValue, expr) && !eqMap(oldValue, newValue) {
 			var merger map[string]interface{}
 			merger, changed = mergeMap(oldValue, newValue)
-			newValues = append(newValues, merger)
-		} else {
-			newValues = append(newValues, oldValue)
+			scopedMaps[i] = merger
 		}
 	}
-	return newValues, changed
-
+	return scopedMaps, changed
 }
 
 func (r *adder) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
-	newValues, changed, found := replaceByValueExpressionForAttribute(scopedMaps, expr, subAttr, value)
+	scopedMaps, changed, found := replaceByValueExpressionForAttribute(scopedMaps, expr, subAttr, value)
 	if !found {
 		changed = true
 		newMap := toMap(expr)
 		newMap[subAttr] = value
-		newValues = append(newValues, newMap)
+		scopedMaps = append(scopedMaps, newMap)
 	}
-	return newValues, changed
+	return scopedMaps, changed
 }

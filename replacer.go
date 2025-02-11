@@ -101,23 +101,18 @@ func (r *replacer) ByValueExpressionForItem(scopedMaps []map[string]interface{},
 	}
 
 	changed := false
-	newValues := []map[string]interface{}{}
-	for _, oldValue := range scopedMaps {
+	for i, oldValue := range scopedMaps {
 		if isMatchExpression(oldValue, expr) && !eqMap(oldValue, newValue) {
 			changed = true
-			newValues = append(newValues, newValue)
-		} else {
-			newValues = append(newValues, oldValue)
+			scopedMaps[i] = newValue
 		}
-
 	}
-	return newValues, changed
-
+	return scopedMaps, changed
 }
 
 func (r *replacer) ByValueExpressionForAttribute(scopedMaps []map[string]interface{}, expr filter.Expression, subAttr string, value interface{}) ([]map[string]interface{}, bool) {
-	newValues, changed, _ := replaceByValueExpressionForAttribute(scopedMaps, expr, subAttr, value)
-	return newValues, changed
+	scopedMaps, changed, _ := replaceByValueExpressionForAttribute(scopedMaps, expr, subAttr, value)
+	return scopedMaps, changed
 }
 
 func replaceByValueExpressionForAttribute(
@@ -128,7 +123,6 @@ func replaceByValueExpressionForAttribute(
 ) ([]map[string]interface{}, bool, bool) {
 	changed := false
 	found := false
-	newValues := []map[string]interface{}{}
 	for _, oldValue := range scopedMaps {
 		if isMatchExpression(oldValue, expr) {
 			found = true
@@ -138,7 +132,6 @@ func replaceByValueExpressionForAttribute(
 				oldValue[subAttr] = value
 			}
 		}
-		newValues = append(newValues, oldValue)
 	}
-	return newValues, changed, found
+	return scopedMaps, changed, found
 }
