@@ -153,9 +153,8 @@ func (p *Patcher) pathSpecifiedOperate(
 		n.ApplyScopedMapSlice(newValues)
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
-		scopedMap, changed = operator.Direct(scopedMap, scopedAttr, op.Value)
+		changed = operator.Direct(scopedMap, scopedAttr, op.Value)
 		n.ApplyScopedMap(scopedMap)
-		data = n.GetMap()
 	}
 
 	return data, changed, nil
@@ -183,19 +182,17 @@ func (p *Patcher) pathUnspecifiedOperate(
 						continue
 					}
 					for scopedAttr, scopedValue := range newUriMap {
-						scopedMap, changed_ := operator.Direct(oldMap, scopedAttr, scopedValue)
+						changed_ := operator.Direct(oldMap, scopedAttr, scopedValue)
 						if changed_ {
 							changed = changed_ || changed
-							oldMap = scopedMap
 						}
 					}
 					data[uriPrefix.ID] = oldMap
 				}
 			} else {
-				data_, changed_ := operator.Direct(data, attr, value)
+				changed_ := operator.Direct(data, attr, value)
 				if changed_ {
 					changed = changed_ || changed
-					data = data_
 				}
 			}
 		}

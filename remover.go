@@ -6,12 +6,12 @@ type remover struct{}
 
 var removerInstance *remover
 
-func (r *remover) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) (map[string]interface{}, bool) {
+func (r *remover) Direct(scopedMap map[string]interface{}, scopedAttr string, value interface{}) bool {
 	if _, ok := scopedMap[scopedAttr]; ok {
 		delete(scopedMap, scopedAttr)
-		return scopedMap, true
+		return true
 	}
-	return scopedMap, false
+	return false
 }
 
 func (r *remover) ByValueForItem(scopedSlice []interface{}, value interface{}) ([]interface{}, bool) {
