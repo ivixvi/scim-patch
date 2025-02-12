@@ -20,6 +20,39 @@ func TestPathNotSpecifiedReplace(t *testing.T) {
 		expected        map[string]interface{}
 		expectedChanged bool
 	}{
+		// Replace Multi Attribute
+		{
+			name: "Replace operation - Core Singular Attributes - add",
+			op: scim.PatchOperation{
+				Op: "replace",
+				Value: map[string]interface{}{
+					"displayName": "Alice Green",
+					"name": map[string]interface{}{
+						"familyName": "Green",
+					},
+					"emails": []interface{}{
+						map[string]interface{}{
+							"type":  "work",
+							"value": "ivixvi-added@example.com",
+						},
+					},
+				},
+			},
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
+				"displayName": "Alice Green",
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi-added@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
 		// Singular Attribute
 		{
 			name: "Replace operation - Core Singular Attributes - add",
