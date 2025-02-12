@@ -20,6 +20,39 @@ func TestPathNotSpecifiedAdd(t *testing.T) {
 		expected        map[string]interface{}
 		expectedChanged bool
 	}{
+		// Replace Multi Attribute
+		{
+			name: "Add operation - Core Singular Attributes - add",
+			op: scim.PatchOperation{
+				Op: "add",
+				Value: map[string]interface{}{
+					"displayName": "Alice Green",
+					"name": map[string]interface{}{
+						"familyName": "Green",
+					},
+					"emails": []interface{}{
+						map[string]interface{}{
+							"type":  "work",
+							"value": "ivixvi-added@example.com",
+						},
+					},
+				},
+			},
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
+				"displayName": "Alice Green",
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "ivixvi-added@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
 		// Singular Attribute
 		{
 			name: "Add operation - Core Singular Attributes - add",
@@ -466,7 +499,7 @@ func TestPathNotSpecifiedAdd(t *testing.T) {
 			}, nil)
 
 			// Apply the PatchOperation
-			result, changed, err := patcher.Apply(context.TODO(),tc.op, tc.data)
+			result, changed, err := patcher.Apply(context.TODO(), tc.op, tc.data)
 			if err != nil {
 				t.Fatalf("Apply() returned an unexpected error: %v", err)
 			}

@@ -178,7 +178,9 @@ func (p *Patcher) pathUnspecifiedOperate(
 			uriPrefix, ok := p.schemas[attr]
 			// Core Attributes
 			if !ok {
-				changed = changed || operator.Direct(ctx, data, attr, value)
+				if operator.Direct(ctx, data, attr, value) {
+					changed = true
+				}
 				continue
 			}
 
@@ -195,7 +197,9 @@ func (p *Patcher) pathUnspecifiedOperate(
 			// if exists, write by every attributes
 			if newUriMap, ok := value.(map[string]interface{}); ok {
 				for scopedAttr, scopedValue := range newUriMap {
-					changed = changed || operator.Direct(ctx, oldMap, scopedAttr, scopedValue)
+					if operator.Direct(ctx, oldMap, scopedAttr, scopedValue) {
+						changed = true
+					}
 				}
 			}
 		}
