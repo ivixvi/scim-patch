@@ -566,6 +566,44 @@ func TestPathSpecifiedAdd(t *testing.T) {
 			},
 			expectedChanged: false,
 		},
+		// Add same type MultiValued Complex Attribute
+		// cf.
+		//   https://datatracker.ietf.org/doc/html/rfc7643#section-2.4
+		//   https://datatracker.ietf.org/doc/html/rfc7644#section-3.5.2.1
+		{
+			name: "Add operation - Replace entire MultiValued Complex Attribute",
+			op: scim.PatchOperation{
+				Op:   "add",
+				Path: path(`emails`),
+				Value: []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "added@example.com",
+					},
+				},
+			},
+			data: map[string]interface{}{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "user@example.com",
+					},
+				},
+			},
+			expected: map[string]interface{}{
+				"emails": []interface{}{
+					map[string]interface{}{
+						"type":  "work",
+						"value": "user@example.com",
+					},
+					map[string]interface{}{
+						"type":  "work",
+						"value": "added@example.com",
+					},
+				},
+			},
+			expectedChanged: true,
+		},
 	}
 
 	for _, tc := range testCases {
