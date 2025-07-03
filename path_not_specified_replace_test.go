@@ -125,6 +125,44 @@ func TestPathNotSpecifiedReplace(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
+			name: "Replace operation - Core Complex Attributes - dot notation, replacing values",
+			op: scim.PatchOperation{
+				Op: "replace",
+				Value: map[string]interface{}{
+					"name.familyName": "Green",
+				},
+			},
+			data: map[string]interface{}{
+				"name": map[string]interface{}{
+					"familyName": "Blue",
+					"givenName":  "Alice",
+				},
+			},
+			expected: map[string]interface{}{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
+			name: "Replace operation - Core Complex Attributes - dot notation, adding value",
+			op: scim.PatchOperation{
+				Op: "replace",
+				Value: map[string]interface{}{
+					"name.familyName": "Green",
+				},
+			},
+			data: map[string]interface{}{},
+			expected: map[string]interface{}{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
 			name: "Replace operation - Core Complex Attributes - no changed.",
 			op: scim.PatchOperation{
 				Op: "replace",

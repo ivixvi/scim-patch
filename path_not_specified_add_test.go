@@ -199,6 +199,28 @@ func TestPathNotSpecifiedAdd(t *testing.T) {
 			expectedChanged: true,
 		},
 		{
+			name: "Add operation - Core Complex Attributes - dot notation",
+			op: scim.PatchOperation{
+				Op: "add",
+				Value: map[string]interface{}{
+					"name.familyName": "Green",
+				},
+			},
+			data: map[string]interface{}{
+				"name": map[string]interface{}{
+					"familyName": "Blue",
+					"givenName":  "Alice",
+				},
+			},
+			expected: map[string]interface{}{
+				"name": map[string]interface{}{
+					"familyName": "Green",
+					"givenName":  "Alice",
+				},
+			},
+			expectedChanged: true,
+		},
+		{
 			name: "Add operation - Core Singular Attributes - map specified no changed",
 			op: scim.PatchOperation{
 				Op: "add",
