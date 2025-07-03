@@ -158,6 +158,7 @@ func (p *Patcher) pathSpecifiedOperate(
 	// request path is `attr`, `attr.subAttr`
 	case !attr.MultiValued() || op.Path.ValueExpression == nil:
 		scopedMap, scopedAttr := n.GetScopedMap()
+		scopedMap, scopedAttr = resolveDotNotationAttribute(scopedMap, scopedAttr)
 		changed = operator.Direct(ctx, scopedMap, scopedAttr, op.Value)
 		n.ApplyScopedMap(scopedMap)
 	}
@@ -178,7 +179,8 @@ func (p *Patcher) pathUnspecifiedOperate(
 			uriPrefix, ok := p.schemas[attr]
 			// Core Attributes
 			if !ok {
-				if operator.Direct(ctx, data, attr, value) {
+				scopedMap, scopedAttr := resolveDotNotationAttribute(data, attr)
+				if operator.Direct(ctx, scopedMap, scopedAttr, value) {
 					changed = true
 				}
 				continue
@@ -197,7 +199,8 @@ func (p *Patcher) pathUnspecifiedOperate(
 			// if exists, write by every attributes
 			if newUriMap, ok := value.(map[string]interface{}); ok {
 				for scopedAttr, scopedValue := range newUriMap {
-					if operator.Direct(ctx, oldMap, scopedAttr, scopedValue) {
+					scopedMap, scopedAttr := resolveDotNotationAttribute(oldMap, scopedAttr)
+					if operator.Direct(ctx, scopedMap, scopedAttr, scopedValue) {
 						changed = true
 					}
 				}
