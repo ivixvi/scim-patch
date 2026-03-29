@@ -489,7 +489,7 @@ func TestPathSpecifiedReplace(t *testing.T) {
 
 			// Apply the PatchOperation using PR's ApplyPatch
 			result, err := scim.ApplyPatch(tc.data, []scim.PatchOperation{tc.op},
-				schema.CoreUserSchema(),
+				userSchemaWithExternalId(),
 				schema.ExtensionEnterpriseUser(),
 				TestExtensionSchema,
 			)
