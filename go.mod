@@ -3,7 +3,7 @@ module github.com/ivixvi/scim-patch
 go 1.22
 
 require (
-	github.com/elimity-com/scim v0.0.0-20240320110924-172bf2aee9c8
+	github.com/elimity-com/scim v0.0.0-20260328082225-d5e7ba418946
 	github.com/scim2/filter-parser/v2 v2.2.0
 )
 

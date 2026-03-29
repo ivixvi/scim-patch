@@ -1,14 +1,12 @@
 package scimpatch_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/errors"
 	"github.com/elimity-com/scim/schema"
-	scimpatch "github.com/ivixvi/scim-patch"
 )
 
 // TestPatcher_Apply は Patcher.Apply の Remove の正常系をテストします
@@ -435,20 +433,18 @@ func TestPathSpecifiedRemove(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
-			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.NewPatcher(
-				schema.CoreUserSchema(),
-				[]schema.Schema{
-					schema.ExtensionEnterpriseUser(),
-					TestExtensionSchema,
-				}, nil)
 
-			// Apply the PatchOperation
-			result, changed, err := patcher.Apply(context.TODO(), tc.op, tc.data)
+			// Apply the PatchOperation using PR's ApplyPatch
+			result, err := scim.ApplyPatch(tc.data, []scim.PatchOperation{tc.op},
+				schema.CoreUserSchema(),
+				schema.ExtensionEnterpriseUser(),
+				TestExtensionSchema,
+			)
 			if err != nil {
-				t.Fatalf("Apply() returned an unexpected error: %v", err)
+				t.Fatalf("ApplyPatch() returned an unexpected error: %v", err)
 			}
-			// Check if the result matches the expected data
+			// Check changed by comparing data vs result
+			changed := fmt.Sprint(result) != fmt.Sprint(tc.data)
 			if changed != tc.expectedChanged {
 				t.Errorf("changed:\n    actual  : %v\n    expected: %v", changed, tc.expectedChanged)
 			}
@@ -480,24 +476,24 @@ func TestRemoveError(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
-			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.Patcher{}
 
-			// Apply the PatchOperation
-			_, _, err := patcher.Apply(context.TODO(), tc.op, map[string]interface{}{})
+			// Apply the PatchOperation using PR's ApplyPatch
+			_, err := scim.ApplyPatch(map[string]interface{}{}, []scim.PatchOperation{tc.op},
+				schema.CoreUserSchema(),
+			)
 			if err == nil {
-				t.Fatalf("Apply() not returned error")
+				t.Fatalf("ApplyPatch() not returned error")
 			}
 			scimError, ok := err.(errors.ScimError)
 			if !ok {
-				t.Fatalf("Apply() not returned ScimError: %v", err)
+				t.Fatalf("ApplyPatch() not returned ScimError: %v", err)
 			}
 
 			// Check if the result matches the expected data
 			if !(tc.expected.Detail == scimError.Detail &&
 				tc.expected.Status == scimError.Status &&
 				tc.expected.ScimType == scimError.ScimType) {
-				t.Fatalf("Apply() not returned Expected ScimError: %v", scimError)
+				t.Fatalf("ApplyPatch() not returned Expected ScimError: %v", scimError)
 			}
 		})
 	}

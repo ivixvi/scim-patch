@@ -1,13 +1,11 @@
 package scimpatch_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
 	"github.com/elimity-com/scim"
 	"github.com/elimity-com/scim/schema"
-	scimpatch "github.com/ivixvi/scim-patch"
 )
 
 // TestPathSpecifiedAdd は Patcher.Apply の path指定をしているadd操作の正常系をテストします
@@ -609,20 +607,18 @@ func TestPathSpecifiedAdd(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Log(tc.name)
-			// Create a Patcher instance with a dummy schema
-			patcher := scimpatch.NewPatcher(
-				schema.CoreUserSchema(),
-				[]schema.Schema{
-					schema.ExtensionEnterpriseUser(),
-					TestExtensionSchema,
-				}, nil)
 
-			// Apply the PatchOperation
-			result, changed, err := patcher.Apply(context.TODO(), tc.op, tc.data)
+			// Apply the PatchOperation using PR's ApplyPatch
+			result, err := scim.ApplyPatch(tc.data, []scim.PatchOperation{tc.op},
+				schema.CoreUserSchema(),
+				schema.ExtensionEnterpriseUser(),
+				TestExtensionSchema,
+			)
 			if err != nil {
-				t.Fatalf("Apply() returned an unexpected error: %v", err)
+				t.Fatalf("ApplyPatch() returned an unexpected error: %v", err)
 			}
-			// Check if the result matches the expected data
+			// Check changed by comparing data vs result
+			changed := fmt.Sprint(result) != fmt.Sprint(tc.data)
 			if changed != tc.expectedChanged {
 				t.Errorf("changed:\n    actual  : %v\n    expected: %v", changed, tc.expectedChanged)
 			}
